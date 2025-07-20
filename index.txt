@@ -1,0 +1,1671 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Prevención - Monegros 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Desert Sands -->
+    <!-- Application Structure Plan: Se ha diseñado una aplicación de página única (SPA) con una estructura orientada a tareas y priorizando el uso en dispositivos móviles. La navegación principal se realiza a través de una barra inferior fija, permitiendo un acceso rápido a cuatro secciones clave: 'Inicio', 'Riesgos', 'Protocolos' y 'Contactos'. La sección de 'Inicio' actúa como un panel de control con acceso inmediato a emergencias y al riesgo climático del día. La sección 'Riesgos' permite al trabajador filtrar el contenido según su área de trabajo, mostrando solo la información relevante para él (riesgos, EPIs, métodos de trabajo y prohibiciones). 'Protocolos' organiza la normativa general y los planes de actuación en secciones desplegables para evitar la sobrecarga de información, incluyendo ahora protocolos de equipos específicos. Esta estructura se eligió porque convierte los extensos documentos PDF en una herramienta de consulta rápida y contextual, centrada en las necesidades inmediatas del trabajador en el terreno, en lugar de forzarlo a navegar por la estructura original de los documentos, y ahora con mayor detalle por puesto. Se ha añadido un modal para un asistente de seguridad con LLM, accesible desde la página de inicio, para responder a preguntas directas de los usuarios. Se ha añadido una nueva sección para el Recurso Preventivo. -->
+    <!-- Visualization & Content Choices: 
+    - **Riesgo por Calor (Inicio):** Objetivo: Informar de un vistazo. Presentación: Un gráfico de tipo 'gauge' (simulado con un gráfico de dona) y una tarjeta de color. Interacción: El color y el texto cambian según el nivel de riesgo, proporcionando una alerta visual inmediata. Justificación: Traduce la tabla del anexo de calor en un indicador visual instantáneo, mucho más eficaz en un entorno de trabajo que leer una tabla. Librería: Chart.js.
+    - **Riesgos por Puesto (Sección Riesgos):** Objetivo: Organizar y personalizar la información. Presentación: Un selector/dropdown seguido de tarjetas informativas detalladas (riesgos, EPIs, métodos, prohibiciones). Interacción: El usuario selecciona su puesto y la aplicación filtra dinámicamente la información correspondiente. Justificación: Reduce la complejidad y hace que la información sea directamente aplicable al usuario, aumentando la probabilidad de que se consulte y se siga, ahora con la profundidad solicitada. Método: HTML/CSS/JS.
+    - **Protocolos y Normas (Sección Protocolos):** Objetivo: Organizar y detallar. Presentación: Listas y secciones desplegables (acordeones), incluyendo ahora seguridad de equipos específicos. Interacción: El usuario toca un encabezado para ver los detalles. Justificación: Mantiene la interfaz limpia y permite al usuario escanear rápidamente los temas y profundizar solo en el que le interesa, ofreciendo más información sin abrumar. Método: HTML/CSS/JS.
+    - **Emergencias (Botón Fijo y Sección Contactos):** Objetivo: Actuar rápidamente. Presentación: Un botón rojo siempre visible y una lista clara de contactos. Interacción: Los números de teléfono son enlaces 'tel:'. Justificación: En una emergencia, el acceso debe ser inmediato y sin ambigüedades. Método: HTML/CSS.
+    - **Asistente de Seguridad (Modal):** Objetivo: Proporcionar respuestas rápidas a preguntas de seguridad. Presentación: Interfaz de chat con entrada de texto y historial de mensajes. Interacción: El usuario escribe una pregunta, el LLM responde. Justificación: Ofrece una forma intuitiva y conversacional de obtener información de seguridad sin navegar por documentos. Método: HTML/CSS/JS con Gemini API.
+    - **Recurso Preventivo (Nueva Sección):** Objetivo: Detallar el rol y la disponibilidad del Recurso Preventivo. Presentación: Información textual organizada en subsecciones. Interacción: Navegación directa desde la barra inferior. Justificación: Proporciona información clave sobre una figura de seguridad crucial en el evento. Método: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+        .active-nav {
+            color: #F59E0B; /* amber-500 */
+            border-top-color: #F59E0B;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .chat-history {
+            max-height: 70vh; /* Adjusted for mobile view */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f9fafb; /* light gray */
+        }
+        .chat-message {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        .chat-message.user {
+            background-color: #dbeafe; /* blue-100 */
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-message.ai {
+            background-color: #e0f2fe; /* lightblue-100 */
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+
+    <div id="app-container" class="pb-20">
+        
+        <header class="bg-black text-white p-4 shadow-md sticky top-0 z-10">
+            <div class="container mx-auto flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold">MONEGROS 2025</h1>
+                    <p class="text-sm text-amber-400">Guía Rápida de Prevención</p>
+                </div>
+                   <div class="text-center">
+                    <span class="text-2xl">👷</span>
+                </div>
+            </div>
+        </header>
+
+
+        <main id="main-content" class="p-4 container mx-auto">
+            
+            <section id="inicio" class="content-section active">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6 text-center">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-2">Panel de Control</h2>
+                    <p class="text-stone-600">Accede a la información clave para tu seguridad durante el montaje.</p>
+                </div>
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h3 class="font-bold text-lg mb-3 text-center text-red-700">🚨 Riesgo Climático Hoy</h3>
+                        <div id="heat-risk-container" class="p-4 rounded-lg text-white text-center flex flex-col items-center">
+                            <div class="chart-container w-full max-w-[250px] mx-auto h-[150px] relative">
+                                <canvas id="heatRiskChart"></canvas>
+                                <div id="heat-level-text" class="absolute inset-0 flex items-center justify-center text-3xl font-extrabold"></div>
+                            </div>
+                            <p id="heat-risk-level" class="text-2xl font-bold mt-2"></p>
+                            <p id="heat-risk-description" class="mt-1 font-medium"></p>
+                        </div>
+                           <div class="mt-4 text-sm text-stone-600">
+                                <p><strong class="text-stone-800">Medidas Clave:</strong></p>
+                                <ul id="heat-recommendations" class="list-disc list-inside mt-2 space-y-1">
+                                    <li>Bebe agua frecuentemente.</li>
+                                    <li>Realiza pausas en la sombra.</li>
+                                    <li>Usa ropa ligera y protección solar.</li>
+                                    <li>Vigila síntomas de mareo o fatiga.</li>
+                                </ul>
+                            </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                           <h3 class="font-bold text-lg mb-3 text-center">⚡️ Accesos Rápidos</h3>
+                           <div class="space-y-3">
+                                <button onclick="navigateTo('riesgos')" class="w-full text-left flex items-center bg-stone-200 hover:bg-stone-300 p-4 rounded-lg transition-colors">
+                                    <span class="text-2xl mr-4">⚠️</span>
+                                    <div>
+                                        <span class="font-bold">Ver Riesgos por Puesto</span>
+                                        <span class="block text-sm text-stone-600">Encuentra los riesgos y EPIs para tu trabajo.</span>
+                                    </div>
+                                </button>
+                                <button onclick="navigateTo('protocolos')" class="w-full text-left flex items-center bg-stone-200 hover:bg-stone-300 p-4 rounded-lg transition-colors">
+                                    <span class="text-2xl mr-4">📜</span>
+                                    <div>
+                                        <span class="font-bold">Consultar Protocolos</span>
+                                        <span class="block text-sm text-stone-600">Normas generales y plan de emergencia.</span>
+                                    </div>
+                                </button>
+                                <button onclick="navigateTo('contactos')" class="w-full text-left flex items-center bg-stone-200 hover:bg-stone-300 p-4 rounded-lg transition-colors">
+                                    <span class="text-2xl mr-4">📞</span>
+                                    <div>
+                                        <span class="font-bold">Contactos de Emergencia</span>
+                                        <span class="block text-sm text-stone-600">Listado de personal clave.</span>
+                                    </div>
+                                </button>
+                                   <button onclick="showChatbotModal()" class="w-full text-left flex items-center bg-blue-600 text-white hover:bg-blue-700 p-4 rounded-lg transition-colors">
+                                    <span class="text-2xl mr-4">✨</span>
+                                    <div>
+                                        <span class="font-bold">Asistente de Seguridad IA</span>
+                                        <span class="block text-sm text-blue-100">Pregunta al LLM sobre seguridad laboral.</span>
+                                    </div>
+                                </button>
+                           </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="riesgos" class="content-section">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-2">Riesgos y Medidas Preventivas</h2>
+                    <p class="text-stone-600">Selecciona tu área de trabajo para ver los riesgos específicos y el equipo de protección individual (EPI) obligatorio.</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="job-selector" class="block text-sm font-medium text-stone-700 mb-2">Selecciona tu puesto o tarea:</label>
+                    <select id="job-selector" class="block w-full p-3 border-stone-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                        <option value="general">Visión General</option>
+                        <option value="carga">Mozo de Carga y Descarga</option>
+                        <option value="altura">Técnico/Montador de Estructuras</option>
+                        <option value="soldador">Soldador</option>
+                        <option value="maquinaria">Conductor de Carretillas Elevadoras</option>
+                        <option value="plataformas">Conductor de Plataformas Elevadoras</option>
+                        <option value="riggers">Trabajador Vertical (Riggers/Scaffolders)</option>
+                        <option value="electricidad">Técnico/Auxiliar Eléctrico</option>
+                        <option value="tecnico_audiovisual">Técnico Audiovisual (Iluminación, Audio y Vídeo)</option>
+                        <option value="tecnico_camara">Técnico de Cámara</option>
+                        <option value="backliner">Backliner</option>
+                        <option value="personal_limpieza">Personal de Limpieza</option>
+                        <option value="personal_bares">Personal de Bares</option>
+                        <option value="personal_restauracion">Personal de Restauración</option>
+                        <option value="movilidad_personal">Movilidad Personal (Bicicletas, Patinetes, Vehículos, etc.)</option>
+                    </select>
+                </div>
+
+
+                <div id="risk-display" class="space-y-4">
+                </div>
+            </section>
+
+
+            <section id="protocolos" class="content-section">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-2">Protocolos y Normas de Actuación</h2>
+                    <p class="text-stone-600">Consulta las normas generales del evento y los procedimientos a seguir en caso de emergencia.</p>
+                </div>
+
+
+                <div id="protocols-list" class="space-y-3">
+                </div>
+            </section>
+
+
+            <section id="recurso-preventivo" class="content-section">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-2">Recurso Preventivo (RP)</h2>
+                    <p class="text-stone-600">El Recurso Preventivo es una figura clave para garantizar tu seguridad en el puesto de trabajo. Su presencia es necesaria en trabajos con riesgos específicos o cuando la concurrencia de operaciones pueda agravarlos.</p>
+                </div>
+
+
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-bold text-lg mb-2 text-blue-700">¿Qué es un Recurso Preventivo?</h3>
+                        <p class="text-stone-700">Es una persona o equipo designado por la empresa para vigilar el cumplimiento de las actividades preventivas, especialmente en trabajos de alto riesgo o con riesgos agravados por la concurrencia de operaciones. Su objetivo principal es asegurar que las medidas de seguridad se apliquen correctamente y que se trabaje de forma segura.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-bold text-lg mb-2 text-blue-700">Funciones Clave del RP</h3>
+                        <ul class="list-disc list-inside space-y-1 text-stone-700">
+                            <li>Vigilar, controlar y hacer cumplir el documento preventivo de la empresa principal.</li>
+                            <li>Informar a los trabajadores sobre las medidas de seguridad y obligar al uso de EPIs y protecciones colectivas.</li>
+                            <li>Designar a los trabajadores para tareas de prevención.</li>
+                            <li>Recibir comunicaciones de seguridad y salud de diversas partes (CAE, contratistas, etc.).</li>
+                            <li>Transmitir y hacer cumplir las órdenes del Coordinador de Actividades Preventivas (CAE).</li>
+                            <li>Detectar variaciones en el proceso de montaje/desmontaje respecto a lo previsto y comunicarlas para su modificación.</li>
+                            <li>Cumplimentar procedimientos de gestión de seguridad (control de acceso, actas de reunión, etc.).</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-bold text-lg mb-2 text-blue-700">¿Cuándo recurrir al Recurso Preventivo?</h3>
+                        <ul class="list-disc list-inside space-y-1  text-stone-700">
+                            <li>Si las condiciones de trabajo no son seguras o no cumplen con las garantías mínimas de seguridad.</li>
+                            <li>Para comunicar y proponer nuevos procedimientos de trabajo seguro.</li>
+                            <li>Para coordinar trabajos simultáneos en tu área.</li>
+                            <li>Si detectas cualquier condición insegura, riesgo no contemplado o situación que pueda poner en peligro tu seguridad o la de tus compañeros.</li>
+                            <li>En trabajos con riesgos eléctricos, maquinaria pesada, alturas, o cuando varios equipos trabajan cerca.</li>
+                            <li>Para asistir a reuniones de coordinación de seguridad.</li>
+                            <li>Si necesitas información adicional sobre un protocolo o medida preventiva específica.</li>
+                        </ul>
+                        <p class="mt-2 text-sm text-stone-600">El Recurso Preventivo tiene la capacidad de **paralizar el trabajo** si las condiciones no son seguras, informando inmediatamente al CAE.</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="acciones-climaticas" class="content-section">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-2">Acciones Climáticas</h2>
+                    <p class="text-stone-600">Protocolos y medidas a seguir ante fenómenos meteorológicos adversos.</p>
+                </div>
+
+
+                <div id="climatic-actions-list" class="space-y-3">
+                </div>
+            </section>
+
+
+            <section id="contactos" class="content-section">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-2">Contactos Clave</h2>
+                    <p class="text-stone-600">En caso de accidente o emergencia, avisa inmediatamente al personal responsable.</p>
+                </div>
+
+
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="font-bold text-red-600">EMERGENCIA GENERAL (Externas)</h3>
+                        <p class="text-5xl font-extrabold text-red-700">112</p>
+                        <a href="tel:112" class="mt-2 inline-block w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg text-center hover:bg-red-700 transition-colors">LLAMAR A EMERGENCIAS</a>
+                    </div>
+                    <div id="contacts-list" class="space-y-3">
+                    </div>
+                </div>
+            </section>
+
+
+        </main>
+        
+        <div id="emergency-button" class="fixed bottom-20 right-4 z-20">
+               <button onclick="showEmergencyProtocol()" class="bg-red-600 text-white rounded-full p-4 shadow-lg flex items-center justify-center w-16 h-16 hover:bg-red-700 transition-transform hover:scale-110">
+                    <span class="text-3xl">🚨</span>
+                </button>
+        </div>
+
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-black text-white flex justify-around p-2 border-t-2 border-stone-700 z-10">
+            <button data-target="inicio" class="nav-btn flex-1 text-center p-2 border-t-4 border-transparent active-nav">
+                <span class="text-2xl">🏠</span>
+                <span class="block text-xs">Inicio</span>
+            </button>
+            <button data-target="riesgos" class="nav-btn flex-1 text-center p-2 border-t-4 border-transparent">
+                <span class="text-2xl">⚠️</span>
+                <span class="block text-xs">Riesgos</span>
+            </button>
+            <button data-target="protocolos" class="nav-btn flex-1 text-center p-2 border-t-4 border-transparent">
+                <span class="text-2xl">📜</span>
+                <span class="block text-xs">Protocolos</span>
+            </button>
+            <button data-target="acciones-climaticas" class="nav-btn flex-1 text-center p-2 border-t-4 border-transparent">
+                <span class="text-2xl">☁️</span>
+                <span class="block text-xs">Clima</span>
+            </button>
+            <button data-target="recurso-preventivo" class="nav-btn flex-1 text-center p-2 border-t-4 border-transparent">
+                <span class="text-2xl">🤝</span>
+                <span class="block text-xs">RP</span>
+            </button>
+            <button data-target="contactos" class="nav-btn flex-1 text-center p-2 border-t-4 border-transparent">
+                <span class="text-2xl">📞</span>
+                <span class="block text-xs">Contactos</span>
+            </button>
+        </nav>
+    </div>
+
+
+    <div id="emergency-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-lg shadow-2xl p-6 relative text-center">
+            <button onclick="closeEmergencyProtocol()" class="absolute top-2 right-2 text-stone-500 hover:text-stone-800 text-3xl">&times;</button>
+            <h2 class="text-3xl font-extrabold text-red-700 mb-4">PROTOCOLO PAS</h2>
+            <p class="mb-6 text-stone-700 font-medium">Ante un accidente, aplica SIEMPRE estas consignas:</p>
+            <div class="space-y-4">
+                <div class="bg-amber-100 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                    <h3 class="font-bold text-xl text-amber-800">1. PROTEGER</h3>
+                    <p class="text-amber-700">Asegura la zona y al accidentado para que su situación no empeore.</p>
+                </div>
+                <div class="bg-sky-100 border-l-4 border-sky-500 p-4 rounded-r-lg">
+                    <h3 class="font-bold text-xl text-sky-800">2. AVISAR</h3>
+                    <p class="text-sky-700">Informa inmediatamente a tu responsable y a los contactos de emergencia.</p>
+                </div>
+                <div class="bg-emerald-100 border-l-4 border-emerald-500 p-4 rounded-r-lg">
+                    <h3 class="font-bold text-xl text-emerald-800">3. SOCORRER</h3>
+                    <p class="text-emerald-700">Presta los primeros auxilios solo si conoces las técnicas. No muevas al herido si no es imprescindible.</p>
+                </div>
+            </div>
+               <a href="#contactos" onclick="navigateTo('contactos'); closeEmergencyProtocol();" class="mt-6 inline-block w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg text-center hover:bg-red-700 transition-colors">VER CONTACTOS Y LLAMAR</a>
+        </div>
+    </div>
+
+
+    <!-- Chatbot Modal -->
+    <div id="chatbot-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-lg shadow-2xl flex flex-col h-[90vh] relative">
+            <div class="p-4 bg-blue-600 text-white rounded-t-lg flex justify-between items-center">
+                <h2 class="text-xl font-bold">Asistente de Seguridad IA ✨</h2>
+                <button onclick="closeChatbotModal()" class="text-white hover:text-blue-100 text-3xl">&times;</button>
+            </div>
+            <div id="chat-history" class="chat-history flex-grow p-4 overflow-y-auto">
+                <div class="chat-message ai">¡Hola! Soy tu asistente de seguridad para el Monegros Desert Festival 2025. Pregúntame sobre riesgos, protocolos o cualquier duda de seguridad laboral.</div>
+            </div>
+            <div class="p-4 border-t border-stone-200 flex items-center">
+                <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí..." class="flex-grow p-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="send-chat-btn" class="ml-3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                    <span id="send-icon">Enviar</span>
+                    <div id="loading-spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+// --- DATA DEFINITIONS ---
+
+
+// Data for different job roles, their risks, PPE, and work instructions
+const riskData = {
+    general: [
+        {   
+            title: 'Caídas a distinto y mismo nivel',   
+            icon: '🚶',
+            description: 'Tropiezos con objetos, cables, o caídas desde pequeñas alturas. Mantén las zonas de paso despejadas y respeta la señalización. Causadas por obstáculos en el suelo, superficies irregulares o mojadas, o desorden de materiales.',
+            ppe: ['Calzado de seguridad antideslizante'],
+            workInstructions: [
+                'Respetar señalización y balizamiento de las zonas de paso y trabajo.',
+                'Extremar precauciones en zonas de riesgo (plataformas, desniveles, cruces con trabajos activos).',
+                'Mantener el orden y la limpieza en todas las áreas.',
+                'No circular por zonas no habilitadas.',
+                'No dejar suelos mojados o con residuos sin señalizar.'
+            ]
+        },
+        {   
+            title: 'Atropellos y golpes con vehículos',
+            icon: '🚗', // Changed from '' to a more appropriate emoji
+            description: 'Riesgo de colisión con vehículos y maquinaria en movimiento. Presta máxima atención en zonas de maniobra y respeta la señalización vial. Causado por conducción temeraria o falta de zonas acotadas.',
+            ppe: ['Chaleco de alta visibilidad'],
+            workInstructions: [
+                'Circular solo por zonas peatonales designadas.',
+                'Extremar precauciones en zonas de cruce con vehículos y maquinaria.',
+                'Atender y respetar la señalización y balizamiento de las zonas.',
+                'No circular por vías habilitadas para vehículos.'
+            ]
+        },
+        {   
+            title: 'Exposición a temperaturas extremas (Calor)',
+            icon: '☀️',
+            description: 'Riesgo de golpe de calor, deshidratación o agotamiento por exposición prolongada al sol y altas temperaturas. Es crucial la hidratación constante y las pausas.',
+            ppe: ['Gorra o sombrero', 'Ropa ligera y transpirable', 'Protección solar'],
+            workInstructions: [
+                'Hidratarse constantemente con agua fresca.',
+                'Realizar pausas frecuentes en zonas con sombra o climatizadas.',
+                'Vigilar síntomas de mareo, fatiga o dolor de cabeza.',
+                'No trabajar sin protección adecuada en exposición prolongada.'
+            ]
+        },
+        {
+            title: 'Incendios',
+            icon: '🔥',
+            description: 'Riesgo de fuego por equipos eléctricos, láseres, o elementos de preparación de alimentos. Conocer el plan de emergencia y la ubicación de extintores es vital.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Seguir indicaciones del personal de seguridad y plan de emergencia.',
+                'No obstaculizar medios de extinción ni vías de evacuación.',
+                'Prohibido fumar fuera de zonas habilitadas.',
+                'No fumar en espacios cerrados o no habilitados.'
+            ]
+        }
+    ],
+    carga: [
+        {
+            title: 'Sobreesfuerzos y lesiones musculoesqueléticas',
+            icon: '💪',
+            description: 'Riesgo al levantar o mover cargas pesadas manualmente. Utiliza siempre medios mecánicos si es posible y adopta posturas correctas (espalda recta, flexionar rodillas).',
+            ppe: ['Guantes de protección mecánica', 'Calzado de seguridad con puntera reforzada', 'Faja lumbar (opcional, según evaluación)'],
+            workInstructions: [
+                'Priorizar medios mecánicos para cargas.',
+                'Si es manual, manipular correctamente: espalda recta, flexionar rodillas, evitar giros de tronco.',
+                'Distribuir el peso y no exceder 25kg por persona (salvo excepciones).',
+                'No levantar cargas excesivas sin ayuda o medios mecánicos.'
+            ]
+        },
+        {
+            title: 'Caída de objetos durante la manipulación',
+            icon: '📦',
+            description: 'Riesgo de caída de materiales durante la carga, descarga o apilamiento. Asegura siempre las cargas y apila de forma estable.',
+            ppe: ['Casco', 'Calzado de seguridad', 'Guantes de agarre'],
+            workInstructions: [
+                'Asegurar la carga en equipos de transporte.',
+                'Apilar materiales de forma estable y segura.',
+                'Mantener zonas de almacenamiento ordenadas.',
+                'No apilar materiales de forma inestable.'
+            ]
+        },
+        {
+            title: 'Atropellos en zonas de carga/descarga',
+            icon: '🚚',
+            description: 'Zonas con alto movimiento de vehículos y personas. El personal a pie debe ser siempre visible y mantenerse en áreas seguras.',
+            ppe: ['Chaleco de alta visibilidad'],
+            workInstructions: [
+                'Mantenerse en zonas peatonales seguras.',
+                'Prestar atención a la circulación de vehículos y maquinaria.',
+                'Respetar señalización y balizamiento de zonas de vehículos.',
+                'No circular por vías designadas para vehículos.'
+            ]
+        },
+        {
+            title: 'Contactos eléctricos',
+            icon: '⚡️',
+            description: 'Riesgo de electrocución por cableado no protegido o instalaciones en mal estado. No manipular cuadros eléctricos y mantenerlos cerrados.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'No manipular cuadros eléctricos.',
+                'Mantener cuadros eléctricos cerrados y señalizados.',
+                'Reportar cualquier anomalía en instalaciones eléctricas.',
+                'No acceder a zonas eléctricas no autorizadas.'
+            ]
+        }
+    ],
+    altura: [
+        {
+            title: 'Caída de personas a distinto nivel',
+            icon: '🧗',
+            description: 'Riesgo de caídas desde andamios, escenarios o estructuras elevadas. El uso de sistemas anticaída es obligatorio y su revisión constante.',
+            ppe: ['Arnés de seguridad con doble cabo de anclaje', 'Casco con barboquejo', 'Calzado de seguridad', 'Guantes de agarre'],
+            workInstructions: [
+                'Uso obligatorio de sistemas de protección individual y colectiva.',
+                'Revisión previa de arnés y doble gancho antes de cada uso.',
+                'Verificar el uso correcto de todos los EPIs de altura.',
+                'No realizar trabajos en altura sin EPIs adecuados y revisados.'
+            ]
+        },
+        {
+            title: 'Caída de objetos desde altura',
+            icon: '🔩',
+            description: 'Riesgo de caída de herramientas o materiales sobre personas. Delimitar y señalizar la zona inferior de trabajo y asegurar las herramientas.',
+            ppe: ['Casco con barboquejo'],
+            workInstructions: [
+                'Delimitar y señalizar la zona de trabajo inferior.',
+                'Asegurar herramientas con cordinos retráctiles.',
+                'No trabajar directamente debajo de otros trabajos en altura.',
+                'No dejar herramientas o materiales sueltos en altura.'
+            ]
+        },
+        {
+            title: 'Viento fuerte en altura',
+            icon: '💨',
+            description: 'El viento puede desestabilizar al trabajador y las estructuras. Suspender trabajos en altura si el viento excede los límites de seguridad (generalmente 30-50 km/h).',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Consultar previsiones meteorológicas.',
+                'Suspender trabajos en altura con vientos fuertes.',
+                'Asegurar estructuras y elementos sueltos.',
+                'No trabajar en altura con condiciones de viento adversas.'
+            ]
+        },
+        {
+            title: 'Contactos eléctricos en altura',
+            icon: '⚡️',
+            description: 'Riesgo de electrocución por proximidad a líneas eléctricas o equipos energizados. Mantener distancias de seguridad y verificar la desenergización.',
+            ppe: ['Guantes aislantes (si se manipulan elementos eléctricos)', 'Casco'],
+            workInstructions: [
+                'Identificar y señalizar líneas eléctricas cercanas.',
+                'Mantener distancias de seguridad a elementos energizados.',
+                'Verificar desenergización antes de manipular equipos eléctricos.',
+                'No acercarse a líneas eléctricas sin autorización y medidas de seguridad.'
+            ]
+        }
+    ],
+    soldador: [
+        {
+            title: 'Exposición a humos y gases de soldadura',
+            icon: '😷',
+            description: 'Riesgo de irritación respiratoria y problemas de salud a largo plazo. Asegurar ventilación adecuada y uso de protección respiratoria.',
+            ppe: ['Mascarilla FFP2/FFP3', 'Casco de soldadura con filtro auto-oscurecible'],
+            workInstructions: [
+                'Asegurar ventilación natural o forzada en el área de trabajo.',
+                'Utilizar extractores de humos si es posible.',
+                'Mantener la cabeza fuera de la pluma de humos.',
+                'No soldar en espacios confinados sin ventilación adecuada.'
+            ]
+        },
+        {
+            title: 'Radiaciones (UV, IR) y quemaduras',
+            icon: '🔥',
+            description: 'Riesgo de quemaduras en piel y ojos por el arco de soldadura. Uso obligatorio de pantalla y ropa protectora.',
+            ppe: ['Casco de soldadura con filtro auto-oscurecible', 'Guantes de soldador', 'Mandil de cuero', 'Ropa ignífuga'],
+            workInstructions: [
+                'Utilizar siempre pantalla de soldadura adecuada.',
+                'Proteger la piel expuesta con ropa ignífuga.',
+                'Delimitar y señalizar la zona de soldadura para proteger a terceros.',
+                'No soldar sin protección ocular y corporal completa.'
+            ]
+        },
+        {
+            title: 'Incendio y explosión',
+            icon: '💥',
+            description: 'Riesgo por chispas, proyecciones y calor. Retirar materiales inflamables y tener extintores a mano.',
+            ppe: ['Ropa ignífuga', 'Guantes de soldador'],
+            workInstructions: [
+                'Retirar materiales inflamables de la zona de trabajo.',
+                'Tener extintores adecuados y operativos cerca.',
+                'Realizar una vigilancia de incendios después de finalizar el trabajo.',
+                'No soldar cerca de materiales inflamables o explosivos.'
+            ]
+        }
+    ],
+    maquinaria: [
+        {
+            title: 'Atropellos y golpes con carretillas',
+            icon: ' forklift',
+            description: 'Riesgo de colisión con peatones u otros vehículos. Conducir con precaución, respetar límites de velocidad y usar bocina.',
+            ppe: ['Chaleco de alta visibilidad', 'Calzado de seguridad'],
+            workInstructions: [
+                'Conducir con precaución y a velocidad segura.',
+                'Respetar señalización y zonas peatonales.',
+                'Usar bocina en cruces y zonas de poca visibilidad.',
+                'No transportar personas en la carretilla.'
+            ]
+        },
+        {
+            title: 'Vuelco de carretilla',
+            icon: ' overturn',
+            description: 'Riesgo de vuelco por sobrecarga, velocidad excesiva o maniobras bruscas. Asegurar la estabilidad de la carga y evitar pendientes pronunciadas.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'No exceder la capacidad de carga de la carretilla.',
+                'Circular con la carga baja y centrada.',
+                'Evitar giros bruscos y velocidades excesivas.',
+                'No conducir sobre superficies inestables o con pendientes pronunciadas.'
+            ]
+        },
+        {
+            title: 'Caída de carga',
+            icon: '📦',
+            description: 'Riesgo de caída de materiales transportados. Asegurar la carga correctamente y evitar movimientos bruscos.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Asegurar la carga en las horquillas.',
+                'Evitar movimientos bruscos al levantar o bajar la carga.',
+                'Verificar que la carga esté estable antes de moverla.',
+                'No transportar cargas inestables o mal apiladas.'
+            ]
+        }
+    ],
+    plataformas: [
+        {
+            title: 'Caída de personas desde plataforma',
+            icon: '🪜',
+            description: 'Riesgo de caída por mal uso, fallo del equipo o condiciones adversas. Uso obligatorio de arnés y anclaje, y revisión del equipo.',
+            ppe: ['Arnés de seguridad con doble cabo de anclaje', 'Casco con barboquejo', 'Calzado de seguridad'],
+            workInstructions: [
+                'Revisar la plataforma antes de cada uso.',
+                'Uso obligatorio de arnés de seguridad y anclaje.',
+                'No sobrecargar la plataforma.',
+                'No mover la plataforma con el brazo extendido o personas en altura.'
+            ]
+        },
+        {
+            title: 'Vuelco de plataforma',
+            icon: '🚧',
+            description: 'Riesgo de vuelco por terreno irregular, sobrecarga o extensión excesiva del brazo. Estabilizar la plataforma y respetar límites de operación.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Nivelar y estabilizar la plataforma en terreno firme.',
+                'Respetar los límites de carga y alcance.',
+                'Evitar operar en pendientes o terrenos inestables.',
+                'No extender el brazo de la plataforma si no está nivelada.'
+            ]
+        },
+        {
+            title: 'Atrapamientos',
+            icon: '🤏',
+            description: 'Riesgo de atrapamiento entre la plataforma y estructuras fijas. Mantener distancia de seguridad y observar el entorno.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Mantener distancia de seguridad a estructuras y obstáculos.',
+                'Observar el entorno antes de cada movimiento.',
+                'Tener un observador en tierra si la visibilidad es limitada.',
+                'No operar la plataforma cerca de obstáculos sin espacio suficiente.'
+            ]
+        }
+    ],
+    riggers: [
+        {
+            title: 'Caída de personas a distinto nivel',
+            icon: '🧗',
+            description: 'Riesgo extremo de caídas desde grandes alturas. Uso riguroso de sistemas anticaída, técnicas de progresión y rescate.',
+            ppe: ['Arnés de seguridad integral', 'Casco con barboquejo', 'Guantes de trabajo', 'Calzado de seguridad', 'Cuerdas, descensores, ascensores, mosquetones, sistemas de anclaje'],
+            workInstructions: [
+                'Doble anclaje permanente (siempre conectado).',
+                'Revisión diaria de todo el equipo de protección individual y colectivo.',
+                'Conocimiento y aplicación de técnicas de rescate.',
+                'No trabajar sin compañero y sin comunicación constante.'
+            ]
+        },
+        {
+            title: 'Caída de objetos desde altura (material de rigging)',
+            icon: '⛓️',
+            description: 'Riesgo de caída de motores, trusses, altavoces, etc. Asegurar cada elemento con eslingas, grilletes y sistemas de seguridad.',
+            ppe: ['Casco con barboquejo'],
+            workInstructions: [
+                'Doble seguridad en todos los elementos suspendidos.',
+                'Delimitación y señalización de zonas de exclusión debajo de trabajos de rigging.',
+                'Comunicación constante con el equipo en tierra.',
+                'No dejar herramientas o materiales sueltos en altura.'
+            ]
+        },
+        {
+            title: 'Sobreesfuerzos y lesiones por manipulación de cargas',
+            icon: '🏋️',
+            description: 'Riesgo al manipular elementos pesados en altura o en el suelo. Utilizar técnicas de levantamiento seguro y ayuda mecánica.',
+            ppe: ['Guantes de protección mecánica', 'Calzado de seguridad'],
+            workInstructions: [
+                'Coordinación en equipo para manipulación de cargas.',
+                'Uso de polipastos y medios mecánicos siempre que sea posible.',
+                'Adoptar posturas correctas al levantar cargas.',
+                'No intentar levantar cargas excesivas sin ayuda.'
+            ]
+        }
+    ],
+    electricidad: [
+        {
+            title: 'Contactos eléctricos directos e indirectos',
+            icon: '⚡️',
+            description: 'Riesgo de electrocución por contacto con partes activas o masas bajo tensión. Desenergizar, verificar ausencia de tensión y usar EPIs adecuados.',
+            ppe: ['Guantes aislantes (clase adecuada)', 'Calzado dieléctrico', 'Casco aislante', 'Gafas de seguridad', 'Herramientas aisladas'],
+            workInstructions: [
+                'Desenergizar y bloquear antes de intervenir.',
+                'Verificar ausencia de tensión con voltímetro.',
+                'Usar herramientas aisladas y EPIs específicos.',
+                'No manipular instalaciones eléctricas sin formación y autorización.'
+            ]
+        },
+        {
+            title: 'Incendio por cortocircuito o sobrecarga',
+            icon: '🔥',
+            description: 'Riesgo de fuego en instalaciones eléctricas. Revisar cableado, protecciones y evitar sobrecargas.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Revisar estado de cables y conexiones.',
+                'No sobrecargar circuitos.',
+                'Asegurar que las protecciones (fusibles, diferenciales) sean las adecuadas.',
+                'No usar equipos eléctricos dañados o con cables pelados.'
+            ]
+        },
+        {
+            title: 'Caídas por cables en el suelo',
+            icon: ' tripping',
+            description: 'Riesgo de tropiezos por tendido de cables. Organizar y proteger el cableado, usar pasacables.',
+            ppe: ['Calzado de seguridad'],
+            workInstructions: [
+                'Organizar y fijar el cableado de forma segura.',
+                'Utilizar pasacables en zonas de tránsito.',
+                'Señalizar cables expuestos.',
+                'No dejar cables sueltos en zonas de paso.'
+            ]
+        }
+    ],
+    tecnico_audiovisual: [
+        {
+            title: 'Riesgo acústico',
+            icon: '🎧',
+            description: 'Exposición a niveles de ruido elevados que pueden causar pérdida auditiva. Uso obligatorio de protectores auditivos.',
+            ppe: ['Protectores auditivos (orejeras o tapones)'],
+            workInstructions: [
+                'Uso constante de protectores auditivos en zonas ruidosas.',
+                'Realizar pausas en ambientes tranquilos.',
+                'Medir niveles de ruido y ajustar si es posible.',
+                'No exponerse a ruido excesivo sin protección.'
+            ]
+        },
+        {
+            title: 'Riesgo por iluminación (láser, focos)',
+            icon: '💡',
+            description: 'Daños oculares por exposición directa a láseres o luz intensa de focos. Seguir protocolos de seguridad láser y evitar mirar directamente.',
+            ppe: ['Gafas de protección láser (si aplica)', 'Gafas de seguridad'],
+            workInstructions: [
+                'No mirar directamente a fuentes de luz intensa o láseres.',
+                'Seguir los protocolos de seguridad para sistemas láser.',
+                'Señalizar zonas de riesgo por iluminación.',
+                'No manipular sistemas de iluminación sin autorización y formación.'
+            ]
+        },
+        {
+            title: 'Caídas por cableado y equipos',
+            icon: '🔌',
+            description: 'Tropiezos con cables, soportes o equipos audiovisuales. Mantener zonas de trabajo ordenadas y cableado protegido.',
+            ppe: ['Calzado de seguridad antideslizante'],
+            workInstructions: [
+                'Organizar y proteger el cableado en el suelo.',
+                'Utilizar pasacables en zonas de tránsito.',
+                'Mantener el área de trabajo despejada de obstáculos.',
+                'No dejar equipos o cables sueltos en zonas de paso.'
+            ]
+        }
+    ],
+    tecnico_camara: [
+        {
+            title: 'Sobreesfuerzos por manipulación de equipos',
+            icon: '🎥',
+            description: 'Lesiones musculoesqueléticas por cargar cámaras pesadas, trípodes y accesorios. Utilizar técnicas de levantamiento correctas y ayuda.',
+            ppe: ['Faja lumbar (opcional)', 'Calzado cómodo y antideslizante'],
+            workInstructions: [
+                'Utilizar carros o ayuda para transportar equipos pesados.',
+                'Adoptar posturas correctas al levantar y manipular.',
+                'Realizar estiramientos y pausas.',
+                'No cargar equipos excesivamente pesados sin ayuda.'
+            ]
+        },
+        {
+            title: 'Caídas por terreno irregular o cableado',
+            icon: ' uneven ground',
+            description: 'Riesgo de tropiezos al moverse con la cámara. Prestar atención al entorno y al cableado.',
+            ppe: ['Calzado de seguridad antideslizante'],
+            workInstructions: [
+                'Observar el terreno al moverse.',
+                'Coordinar movimientos con el equipo de producción.',
+                'Evitar zonas con cableado suelto.',
+                'No correr con equipos pesados.'
+            ]
+        },
+        {
+            title: 'Exposición a ruido y luz intensa',
+            icon: '💡',
+            description: 'Molestias o daños por ruido y focos. Uso de protectores auditivos y precaución con la iluminación.',
+            ppe: ['Protectores auditivos', 'Gafas de sol (si es exterior)'],
+            workInstructions: [
+                'Usar protectores auditivos en zonas ruidosas.',
+                'Evitar mirar directamente a focos o láseres.',
+                'Comunicar cualquier molestia por luz o sonido.',
+                'No ignorar las advertencias de seguridad en zonas de iluminación/sonido.'
+            ]
+        }
+    ],
+    backliner: [
+        {
+            title: 'Sobreesfuerzos por manipulación de instrumentos y equipos',
+            icon: '🎸',
+            description: 'Lesiones musculoesqueléticas al mover amplificadores, baterías, etc. Utilizar técnicas de levantamiento y ayuda mecánica.',
+            ppe: ['Guantes de protección mecánica', 'Calzado de seguridad con puntera reforzada', 'Faja lumbar (opcional)'],
+            workInstructions: [
+                'Utilizar carros, rampas o ayuda para equipos pesados.',
+                'Adoptar posturas correctas al levantar objetos.',
+                'Coordinar movimientos con el equipo.',
+                'No intentar levantar equipos excesivamente pesados solo.'
+            ]
+        },
+        {
+            title: 'Golpes y atrapamientos con equipos',
+            icon: '🥁',
+            description: 'Riesgo de golpes o atrapamientos al montar/desmontar equipos. Prestar atención y asegurar los elementos.',
+            ppe: ['Guantes de protección', 'Casco (si aplica)'],
+            workInstructions: [
+                'Asegurar los equipos durante el montaje y desmontaje.',
+                'Mantener distancia de seguridad de elementos en movimiento.',
+                'Comunicar movimientos de equipos grandes.',
+                'No trabajar bajo equipos inestables.'
+            ]
+        },
+        {
+            title: 'Riesgo acústico',
+            icon: '🎶',
+            description: 'Exposición a ruido elevado durante pruebas de sonido y conciertos. Uso obligatorio de protectores auditivos.',
+            ppe: ['Protectores auditivos (orejeras o tapones)'],
+            workInstructions: [
+                'Uso constante de protectores auditivos.',
+                'Evitar permanecer innecesariamente en zonas de alto ruido.',
+                'Realizar pausas auditivas.',
+                'No subestimar el riesgo del ruido.'
+            ]
+        }
+    ],
+    personal_limpieza: [
+        {
+            title: 'Caídas por suelos mojados o resbaladizos',
+            icon: '💧',
+            description: 'Riesgo de resbalones al limpiar o en zonas recién fregadas. Señalizar adecuadamente y usar calzado antideslizante.',
+            ppe: ['Calzado de seguridad antideslizante'],
+            workInstructions: [
+                'Señalizar siempre las zonas mojadas con carteles de "Piso Mojado".',
+                'Limpiar derrames inmediatamente.',
+                'Utilizar productos de limpieza adecuados y no resbaladizos.',
+                'No dejar suelos mojados sin señalizar.'
+            ]
+        },
+        {
+            title: 'Exposición a productos químicos',
+            icon: '🧪',
+            description: 'Irritación de piel, ojos o vías respiratorias por productos de limpieza. Usar guantes, gafas y asegurar ventilación.',
+            ppe: ['Guantes de protección química', 'Gafas de seguridad', 'Mascarilla (si aplica)'],
+            workInstructions: [
+                'Leer las etiquetas y fichas de seguridad de los productos.',
+                'Utilizar los EPIs recomendados para cada producto.',
+                'Asegurar ventilación al usar productos químicos.',
+                'No mezclar productos químicos sin conocer su compatibilidad.'
+            ]
+        },
+        {
+            title: 'Cortes y pinchazos',
+            icon: '🔪',
+            description: 'Riesgo de cortes con cristales rotos, objetos punzantes en la basura. Usar guantes resistentes y precaución.',
+            ppe: ['Guantes anticorte'],
+            workInstructions: [
+                'Manipular la basura con precaución.',
+                'No compactar la basura con las manos.',
+                'Utilizar recogedores y escobas para objetos cortantes.',
+                'No tocar objetos desconocidos o sospechosos sin protección.'
+            ]
+        }
+    ],
+    personal_bares: [
+        {
+            title: 'Cortes y pinchazos',
+            icon: '🔪',
+            description: 'Riesgo al manipular vasos, botellas, cuchillos o equipos de corte. Usar guantes y precaución.',
+            ppe: ['Guantes anticorte (si aplica)', 'Calzado antideslizante'],
+            workInstructions: [
+                'Manejar cristalería con cuidado.',
+                'Utilizar utensilios adecuados para cada tarea.',
+                'Recoger cristales rotos con escoba y recogedor, nunca con las manos.',
+                'No manipular cuchillos sin la formación adecuada.'
+            ]
+        },
+        {
+            title: 'Caídas por derrames o suelos mojados',
+            icon: '�',
+            description: 'Riesgo de resbalones por líquidos derramados. Limpiar inmediatamente y señalizar.',
+            ppe: ['Calzado antideslizante'],
+            workInstructions: [
+                'Limpiar derrames de líquidos inmediatamente.',
+                'Señalizar zonas mojadas.',
+                'Mantener el suelo seco y limpio.',
+                'No dejar botellas o vasos en el suelo.'
+            ]
+        },
+        {
+            title: 'Sobreesfuerzos',
+            icon: '💪',
+            description: 'Lesiones por levantar cajas de bebidas, hielo, etc. Utilizar técnicas de levantamiento correctas.',
+            ppe: ['N/A'],
+            workInstructions: [
+                'Levantar cargas doblando las rodillas, no la espalda.',
+                'Pedir ayuda para cargas pesadas.',
+                'Utilizar carros para transportar grandes volúmenes.',
+                'No levantar cargas excesivas.'
+            ]
+        }
+    ],
+    personal_restauracion: [
+        {
+            title: 'Quemaduras',
+            icon: '🔥',
+            description: 'Riesgo por contacto con superficies calientes, líquidos hirviendo o vapor. Usar guantes y utensilios adecuados.',
+            ppe: ['Guantes térmicos', 'Delantal ignífugo (si aplica)'],
+            workInstructions: [
+                'Utilizar guantes y manoplas para manipular objetos calientes.',
+                'Manejar líquidos calientes con precaución.',
+                'Mantener distancia de seguridad de fuentes de calor.',
+                'No tocar superficies calientes sin protección.'
+            ]
+        },
+        {
+            title: 'Cortes y pinchazos',
+            icon: '🔪',
+            description: 'Riesgo al usar cuchillos, mandolinas u otros equipos de cocina. Usar guantes anticorte y técnica adecuada.',
+            ppe: ['Guantes anticorte', 'Calzado de seguridad antideslizante'],
+            workInstructions: [
+                'Utilizar cuchillos afilados y en buen estado.',
+                'Cortar siempre sobre superficies estables.',
+                'Guardar los cuchillos en soportes seguros.',
+                'No usar cuchillos para tareas para las que no están diseñados.'
+            ]
+        },
+        {
+            title: 'Caídas por suelos grasos o mojados',
+            icon: ' greasy floor',
+            description: 'Riesgo de resbalones en cocinas. Mantener el suelo limpio y seco, usar calzado antideslizante.',
+            ppe: ['Calzado de seguridad antideslizante'],
+            workInstructions: [
+                'Limpiar derrames de grasa o líquidos inmediatamente.',
+                'Utilizar desengrasantes y mantener la higiene del suelo.',
+                'No correr en la cocina.',
+                'No dejar obstáculos en el suelo.'
+            ]
+        }
+    ],
+    movilidad_personal: [
+        {
+            title: 'Atropellos y colisiones',
+            icon: '🚴',
+            description: 'Riesgo de accidentes con otros vehículos, peatones o elementos fijos. Conducir con precaución y respetar normas de tráfico.',
+            ppe: ['Casco (obligatorio para bicicletas/patinetes)', 'Chaleco de alta visibilidad (especialmente de noche)', 'Luces (delantera y trasera)'],
+            workInstructions: [
+                'Respetar las normas de tráfico y señalización.',
+                'Utilizar vías habilitadas para vehículos o bicicletas.',
+                'Mantener distancia de seguridad con otros usuarios.',
+                'No usar el móvil o auriculares mientras se conduce.'
+            ]
+        },
+        {
+            title: 'Caídas y lesiones por irregularidades del terreno',
+            icon: ' uneven ground',
+            description: 'Riesgo de caídas por baches, obstáculos o superficies resbaladizas. Prestar atención al terreno y adaptar la velocidad.',
+            ppe: ['Rodilleras, coderas (opcional, recomendado para patinetes)'],
+            workInstructions: [
+                'Adaptar la velocidad a las condiciones del terreno.',
+                'Evitar zonas con obstáculos o superficies irregulares.',
+                'Frenar con antelación y de forma suave.',
+                'No realizar maniobras bruscas.'
+            ]
+        },
+        {
+            title: 'Visibilidad reducida',
+            icon: ' foggy',
+            description: 'Riesgo de no ser visto por otros usuarios, especialmente de noche o con poca luz. Usar elementos reflectantes y luces.',
+            ppe: ['Chaleco de alta visibilidad', 'Luces delantera y trasera'],
+            workInstructions: [
+                'Asegurar la visibilidad con luces y elementos reflectantes.',
+                'Evitar circular en zonas de muy baja visibilidad.',
+                'No circular sin iluminación adecuada en condiciones de poca luz.',
+                'No asumir que otros te ven.'
+            ]
+        }
+    ]
+};
+
+
+// Data for general protocols and specific equipment protocols
+const protocolData = [
+    {
+        title: 'Protocolo General de Seguridad',
+        icon: '📜',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Identificación:</strong> Lleva siempre tu acreditación visible.</li>
+                <li><strong>Zonas de Acceso Restringido:</strong> No accedas a zonas balizadas o restringidas sin autorización.</li>
+                <li><strong>Orden y Limpieza:</strong> Mantén tu área de trabajo limpia y ordenada para prevenir accidentes.</li>
+                <li><strong>Vías de Evacuación:</strong> Conoce las vías de evacuación y puntos de encuentro. Mantenlas despejadas.</li>
+                <li><strong>Primeros Auxilios:</strong> Ubica los puestos de primeros auxilios.</li>
+                <li><strong>Comunicación:</strong> Reporta cualquier incidente, riesgo o anomalía a tu supervisor o al Recurso Preventivo.</li>
+                <li><strong>Residuos:</strong> Deposita los residuos en los contenedores adecuados.</li>
+                <li><strong>No Fumar:</strong> Prohibido fumar en todas las instalaciones salvo en zonas habilitadas.</li>
+                <li><strong>Alcohol y Drogas:</strong> Prohibido el consumo de alcohol y drogas durante la jornada laboral.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Plan de Emergencia y Evacuación',
+        icon: '🚨',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Alarma:</strong> Presta atención a las señales de alarma (sirenas, avisos por megafonía).</li>
+                <li><strong>Evacuación:</strong> Sigue las rutas de evacuación señalizadas. No uses ascensores.</li>
+                <li><strong>Punto de Encuentro:</strong> Dirígete al punto de encuentro asignado para tu zona.</li>
+                <li><strong>Calma:</strong> Mantén la calma y ayuda a quien lo necesite.</li>
+                <li><strong>No Retroceder:</strong> Una vez evacuado, no regreses al área hasta que se te indique.</li>
+                <li><strong>Personal de Seguridad:</strong> Sigue siempre las instrucciones del personal de seguridad y emergencia.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo de Seguridad para Trabajos en Altura',
+        icon: '🧗',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Formación:</strong> Solo personal formado y autorizado puede realizar trabajos en altura.</li>
+                <li><strong>EPIs:</strong> Uso obligatorio de arnés de seguridad, doble cabo de anclaje, casco con barboquejo y calzado de seguridad.</li>
+                <li><strong>Anclaje:</strong> Asegura siempre el arnés a puntos de anclaje certificados (doble anclaje).</li>
+                <li><strong>Inspección:</strong> Inspecciona el equipo anticaídas antes de cada uso.</li>
+                <li><strong>Delimitación:</strong> Delimita y señaliza la zona de trabajo inferior para evitar caída de objetos.</li>
+                <li><strong>Condiciones Climáticas:</strong> Suspende los trabajos en altura con viento fuerte, lluvia o tormenta.</li>
+                <li><strong>Rescate:</strong> Asegura la disponibilidad de un plan de rescate y personal capacitado.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo de Seguridad Eléctrica',
+        icon: '⚡️',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Desconexión:</strong> Antes de cualquier intervención, desconecta y verifica la ausencia de tensión.</li>
+                <li><strong>Etiquetado:</strong> Etiqueta los equipos y circuitos desconectados para evitar reconexiones accidentales.</li>
+                <li><strong>EPIs:</strong> Usa guantes aislantes, calzado dieléctrico y herramientas aisladas.</li>
+                <li><strong>Cableado:</strong> Protege y organiza el cableado para evitar tropiezos y daños.</li>
+                <li><strong>Cuadros Eléctricos:</strong> Mantén los cuadros eléctricos cerrados y señalizados. Solo personal autorizado.</li>
+                <li><strong>Reporte:</strong> Reporta cualquier anomalía eléctrica (cables pelados, chispas, olor a quemado).</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo de Uso de Maquinaria Pesada (Carretillas, Plataformas)',
+        icon: '🚜',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Autorización:</strong> Solo personal con formación y autorización específica puede operar maquinaria.</li>
+                <li><strong>Inspección Previa:</strong> Realiza una inspección diaria del equipo antes de su uso (frenos, neumáticos, luces, bocina).</li>
+                <li><strong>Límites de Carga:</strong> Respeta siempre los límites de carga y altura del fabricante.</li>
+                <li><strong>Velocidad:</strong> Conduce a una velocidad segura y adecuada al entorno.</li>
+                <li><strong>Visibilidad:</strong> Asegura una visibilidad total. Si es limitada, utiliza un señalista.</li>
+                <li><strong>Zonas Peatonales:</strong> Presta máxima atención en zonas de tránsito de peatones y usa la bocina.</li>
+                <li><strong>Estabilidad:</strong> Asegura la estabilidad de la carga y el terreno antes de operar.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo de Manipulación Manual de Cargas',
+        icon: '🏋️',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Evaluación:</strong> Evalúa el peso y tamaño de la carga antes de levantarla.</li>
+                <li><strong>Postura:</strong> Flexiona las rodillas, mantén la espalda recta y la carga cerca del cuerpo.</li>
+                <li><strong>Ayuda:</strong> Pide ayuda o utiliza medios mecánicos si la carga es pesada o voluminosa.</li>
+                <li><strong>Agarre:</strong> Asegura un agarre firme de la carga.</li>
+                <li><strong>Ruta:</strong> Planifica la ruta de transporte, asegurando que esté libre de obstáculos.</li>
+                <li><strong>No Girar:</strong> Evita girar el tronco mientras levantas o transportas la carga.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo de Gestión de Residuos',
+        icon: '🗑️',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Clasificación:</strong> Separa los residuos según su tipo (orgánico, envases, papel/cartón, vidrio, especiales).</li>
+                <li><strong>Contenedores:</strong> Utiliza los contenedores y puntos de recogida designados.</li>
+                <li><strong>Objetos Punzantes:</strong> Desecha objetos punzantes o cortantes en contenedores específicos para evitar accidentes.</li>
+                <li><strong>Limpieza:</strong> Mantén las zonas de contenedores limpias y ordenadas.</li>
+                <li><strong>No Acumular:</strong> Evita la acumulación excesiva de residuos en las zonas de trabajo.</li>
+            </ul>
+        `
+    }
+];
+
+
+// Data for climatic actions
+const climaticActionsData = [
+    {
+        title: 'Protocolo por Altas Temperaturas (Ola de Calor)',
+        icon: '☀️',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Hidratación:</strong> Bebe agua frecuentemente, incluso si no tienes sed. Se dispondrá de puntos de agua potable.</li>
+                <li><strong>Pausas:</strong> Realiza pausas regulares en zonas de sombra o climatizadas.</li>
+                <li><strong>Ropa:</strong> Usa ropa ligera, holgada y de colores claros. Gorra o sombrero.</li>
+                <li><strong>Protección Solar:</strong> Aplica crema solar y usa gafas de sol.</li>
+                <li><strong>Horarios:</strong> Evita las horas de máxima exposición solar (12:00 - 17:00) para trabajos intensos.</li>
+                <li><strong>Síntomas:</strong> Vigila síntomas de golpe de calor (mareo, náuseas, dolor de cabeza, piel seca y caliente) y avisa inmediatamente.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo por Lluvia y Tormentas',
+        icon: '🌧️',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Refugio:</strong> Busca refugio en estructuras seguras. Evita árboles y estructuras metálicas.</li>
+                <li><strong>Desconexión Eléctrica:</strong> Desconecta equipos eléctricos si hay riesgo de inundación o contacto con agua.</li>
+                <li><strong>Zonas Inundables:</strong> Evita zonas propensas a inundaciones.</li>
+                <li><strong>Trabajos en Altura:</strong> Suspende inmediatamente los trabajos en altura.</li>
+                <li><strong>Conducción:</strong> Extrema la precaución al conducir vehículos.</li>
+                <li><strong>Reporte:</strong> Reporta cualquier daño en estructuras o instalaciones.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo por Viento Fuerte',
+        icon: '🌬️',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Asegurar Elementos:</strong> Fija o retira cualquier elemento que pueda ser arrastrado por el viento (lonas, carteles, herramientas).</li>
+                <li><strong>Trabajos en Altura:</strong> Suspende los trabajos en altura si el viento supera los límites de seguridad.</li>
+                <li><strong>Estructuras:</strong> Revisa la estabilidad de andamios, trusses y otras estructuras.</li>
+                <li><strong>Precaución:</strong> Extrema la precaución al caminar cerca de estructuras altas o elementos colgantes.</li>
+                <li><strong>Cierre de Accesos:</strong> Si es necesario, se cerrarán temporalmente accesos a zonas de riesgo.</li>
+            </ul>
+        `
+    },
+    {
+        title: 'Protocolo por Polvo y Partículas en Suspensión',
+        icon: '💨',
+        content: `
+            <ul class="list-disc list-inside space-y-1 text-stone-700">
+                <li><strong>Protección Respiratoria:</strong> Usa mascarillas (FFP1/FFP2) si trabajas en zonas con mucho polvo.</li>
+                <li><strong>Protección Ocular:</strong> Usa gafas de seguridad para proteger los ojos.</li>
+                <li><strong>Hidratación:</strong> Bebe agua para mantener las vías respiratorias hidratadas.</li>
+                <li><strong>Ventilación:</strong> Si es posible, utiliza sistemas de humidificación o ventilación para reducir el polvo.</li>
+                <li><strong>Limpieza:</strong> Mantén las zonas de trabajo limpias para evitar la acumulación de polvo.</li>
+            </ul>
+        `
+    }
+];
+
+
+// Data for key contacts
+const contactData = [
+    { name: 'Coordinador de Actividades Preventivas (CAE)', role: 'Seguridad General', phone: '600123456' },
+    { name: 'Jefe de Equipo / Supervisor Directo', role: 'Tu responsable', phone: '600789012' },
+    { name: 'Servicios Médicos / Primeros Auxilios', role: 'Asistencia Sanitaria', phone: '600345678' },
+    { name: 'Recurso Preventivo de Turno', role: 'Vigilancia de Seguridad', phone: '600901234' },
+    { name: 'Control de Acceso / Seguridad del Evento', role: 'Incidencias Generales', phone: '600567890' }
+];
+
+
+// --- GLOBAL VARIABLES ---
+let heatRiskChartInstance = null; // To store the Chart.js instance for heat risk
+
+
+// --- NAVIGATION FUNCTIONS ---
+
+
+/**
+ * Navigates to a specific section of the application.
+ * Hides all content sections and shows the target section.
+ * Updates the active state of navigation buttons.
+ * @param {string} sectionId - The ID of the section to navigate to.
+ */
+function navigateTo(sectionId) {
+    // Hide all content sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+
+    // Show the target section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+
+
+    // Update active navigation button
+    document.querySelectorAll('.nav-btn').forEach(button => {
+        button.classList.remove('active-nav');
+    });
+    const activeNavButton = document.querySelector(`.nav-btn[data-target="${sectionId}"]`);
+    if (activeNavButton) {
+        activeNavButton.classList.add('active-nav');
+    }
+
+
+    // Scroll to top of the main content area for better UX
+    document.getElementById('main-content').scrollTop = 0;
+}
+
+
+// --- MODAL FUNCTIONS ---
+
+
+/**
+ * Shows the emergency protocol modal.
+ */
+function showEmergencyProtocol() {
+    document.getElementById('emergency-modal').classList.remove('hidden');
+}
+
+
+/**
+ * Closes the emergency protocol modal.
+ */
+function closeEmergencyProtocol() {
+    document.getElementById('emergency-modal').classList.add('hidden');
+}
+
+
+/**
+ * Shows the chatbot modal.
+ */
+function showChatbotModal() {
+    document.getElementById('chatbot-modal').classList.remove('hidden');
+}
+
+
+/**
+ * Closes the chatbot modal.
+ */
+function closeChatbotModal() {
+    document.getElementById('chatbot-modal').classList.add('hidden');
+}
+
+
+// --- HEAT RISK CHART FUNCTIONALITY ---
+
+
+/**
+ * Updates the heat risk chart based on a simulated risk level.
+ * In a real application, this data would come from an API or sensor.
+ */
+function updateHeatRiskChart() {
+    const ctx = document.getElementById('heatRiskChart').getContext('2d');
+    
+    // Simulate a random heat risk level (0-3)
+    const riskLevel = Math.floor(Math.random() * 4); // 0: Bajo, 1: Moderado, 2: Alto, 3: Extremo
+
+
+    let levelText = '';
+    let description = '';
+    let backgroundColor = '';
+    let textColor = '';
+    let chartColor = '';
+    let recommendations = [];
+
+
+    switch (riskLevel) {
+        case 0:
+            levelText = 'BAJO';
+            description = 'Condiciones climáticas favorables. Mantente hidratado.';
+            backgroundColor = 'bg-emerald-500';
+            textColor = 'text-emerald-800';
+            chartColor = '#10B981'; // emerald-500
+            recommendations = [
+                'Bebe agua regularmente.',
+                'Realiza pausas según necesidad.',
+                'Usa ropa cómoda y transpirable.'
+            ];
+            break;
+        case 1:
+            levelText = 'MODERADO';
+            description = 'Precaución por calor. Hidratación constante y pausas frecuentes.';
+            backgroundColor = 'bg-yellow-500';
+            textColor = 'text-yellow-800';
+            chartColor = '#F59E0B'; // amber-500
+            recommendations = [
+                'Bebe agua frecuentemente.',
+                'Realiza pausas en la sombra cada 1-2 horas.',
+                'Usa gorra y protección solar.',
+                'Evita esfuerzos físicos intensos en las horas centrales del día.'
+            ];
+            break;
+        case 2:
+            levelText = 'ALTO';
+            description = 'Riesgo significativo de golpe de calor. Extrema las precauciones.';
+            backgroundColor = 'bg-orange-500';
+            textColor = 'text-orange-800';
+            chartColor = '#F97316'; // orange-500
+            recommendations = [
+                'Hidratación muy frecuente (cada 15-30 min).',
+                'Pausas obligatorias en zonas frescas cada hora.',
+                'Trabajos intensos solo en las horas más frescas.',
+                'Vigila a tus compañeros por síntomas de agotamiento.'
+            ];
+            break;
+        case 3:
+            levelText = 'EXTREMO';
+            description = 'Peligro inminente. Minimiza la exposición y prioriza la seguridad.';
+            backgroundColor = 'bg-red-600';
+            textColor = 'text-red-800';
+            chartColor = '#DC2626'; // red-600
+            recommendations = [
+                'Evita la exposición directa al sol.',
+                'Trabajos esenciales solo en periodos muy cortos y con supervisión.',
+                'Hidratación constante y pausas muy frecuentes.',
+                'Considera la suspensión de trabajos no esenciales.'
+            ];
+            break;
+    }
+
+
+    document.getElementById('heat-risk-container').className = `p-4 rounded-lg text-white text-center flex flex-col items-center ${backgroundColor}`;
+    document.getElementById('heat-level-text').textContent = levelText;
+    document.getElementById('heat-level-text').style.color = 'white'; // Ensure text is visible on colored background
+    document.getElementById('heat-risk-level').textContent = `Nivel de Riesgo: ${levelText}`;
+    document.getElementById('heat-risk-level').className = `text-2xl font-bold mt-2 ${textColor}`; // Apply text color
+    document.getElementById('heat-risk-description').textContent = description;
+    document.getElementById('heat-risk-description').className = `mt-1 font-medium ${textColor}`; // Apply text color
+
+
+    const recommendationsList = document.getElementById('heat-recommendations');
+    recommendationsList.innerHTML = '';
+    recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.textContent = rec;
+        recommendationsList.appendChild(li);
+    });
+
+
+    // Destroy existing chart instance if it exists
+    if (heatRiskChartInstance) {
+        heatRiskChartInstance.destroy();
+    }
+
+
+    // Create a new Chart.js instance for the gauge effect
+    heatRiskChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [1, 0.2], // 1 for the main arc, 0.2 for the hidden bottom part
+                backgroundColor: [chartColor, 'transparent'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            rotation: 270, // Start at 270 degrees (top)
+            circumference: 180, // Draw half a circle
+            cutout: '80%', // Make it a donut chart
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+}
+
+
+// --- RISK DISPLAY FUNCTIONALITY ---
+
+
+/**
+ * Renders the risks, PPE, and work instructions for a given job role.
+ * @param {string} job - The job role ID (e.g., 'general', 'altura').
+ */
+function renderRisks(job) {
+    const riskDisplay = document.getElementById('risk-display');
+    riskDisplay.innerHTML = ''; // Clear previous content
+
+
+    const risks = riskData[job];
+    if (!risks || risks.length === 0) {
+        riskDisplay.innerHTML = '<p class="text-stone-600">No hay información de riesgos específica para este puesto.</p>';
+        return;
+    }
+
+
+    risks.forEach(risk => {
+        const riskCard = document.createElement('div');
+        riskCard.className = 'bg-white p-4 rounded-lg shadow-md';
+        riskCard.innerHTML = `
+            <h3 class="font-bold text-lg mb-2 flex items-center text-amber-700">
+                <span class="text-2xl mr-2">${risk.icon}</span> ${risk.title}
+            </h3>
+            <p class="text-stone-700 mb-3">${risk.description}</p>
+            
+            <div class="mt-4">
+                <h4 class="font-semibold text-stone-800 mb-1">Equipo de Protección Individual (EPI):</h4>
+                <ul class="list-disc list-inside text-sm text-stone-600">
+                    ${risk.ppe.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+
+
+            <div class="mt-4">
+                <h4 class="font-semibold text-stone-800 mb-1">Instrucciones de Trabajo y Prohibiciones:</h4>
+                <ul class="list-disc list-inside text-sm text-stone-600">
+                    ${risk.workInstructions.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        riskDisplay.appendChild(riskCard);
+    });
+}
+
+
+// --- PROTOCOL DISPLAY FUNCTIONALITY ---
+
+
+/**
+ * Renders the protocols as accordion items.
+ */
+function renderProtocols() {
+    const protocolsList = document.getElementById('protocols-list');
+    protocolsList.innerHTML = ''; // Clear previous content
+
+
+    protocolData.forEach((protocol, index) => {
+        const accordionItem = document.createElement('div');
+        accordionItem.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+        accordionItem.innerHTML = `
+            <button class="accordion-header w-full text-left p-4 flex items-center justify-between bg-stone-200 hover:bg-stone-300 transition-colors rounded-t-lg">
+                <h3 class="font-bold text-lg flex items-center text-stone-800">
+                    <span class="text-2xl mr-2">${protocol.icon}</span> ${protocol.title}
+                </h3>
+                <span class="text-stone-600 text-xl transform transition-transform duration-300 rotate-0">▼</span>
+            </button>
+            <div class="accordion-content p-4 bg-stone-50 rounded-b-lg">
+                ${protocol.content}
+            </div>
+        `;
+        protocolsList.appendChild(accordionItem);
+    });
+
+
+    // Add event listeners for accordion functionality
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            const icon = this.querySelector('span:last-child');
+
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.classList.remove('rotate-180');
+            } else {
+                // Close other open accordions
+                document.querySelectorAll('.accordion-content').forEach(otherContent => {
+                    if (otherContent !== content && otherContent.style.maxHeight) {
+                        otherContent.style.maxHeight = null;
+                        otherContent.previousElementSibling.querySelector('span:last-child').classList.remove('rotate-180');
+                    }
+                });
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.classList.add('rotate-180');
+            }
+        });
+    });
+}
+
+
+// --- CLIMATIC ACTIONS DISPLAY FUNCTIONALITY ---
+
+
+/**
+ * Renders the climatic actions as accordion items.
+ */
+function renderClimaticActions() {
+    const climaticActionsList = document.getElementById('climatic-actions-list');
+    climaticActionsList.innerHTML = ''; // Clear previous content
+
+
+    climaticActionsData.forEach((action, index) => {
+        const accordionItem = document.createElement('div');
+        accordionItem.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+        accordionItem.innerHTML = `
+            <button class="accordion-header w-full text-left p-4 flex items-center justify-between bg-stone-200 hover:bg-stone-300 transition-colors rounded-t-lg">
+                <h3 class="font-bold text-lg flex items-center text-stone-800">
+                    <span class="text-2xl mr-2">${action.icon}</span> ${action.title}
+                </h3>
+                <span class="text-stone-600 text-xl transform transition-transform duration-300 rotate-0">▼</span>
+            </button>
+            <div class="accordion-content p-4 bg-stone-50 rounded-b-lg">
+                ${action.content}
+            </div>
+        `;
+        climaticActionsList.appendChild(accordionItem);
+    });
+
+
+    // Add event listeners for accordion functionality
+    document.querySelectorAll('#climatic-actions-list .accordion-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            const icon = this.querySelector('span:last-child');
+
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.classList.remove('rotate-180');
+            } else {
+                // Close other open accordions within this section
+                document.querySelectorAll('#climatic-actions-list .accordion-content').forEach(otherContent => {
+                    if (otherContent !== content && otherContent.style.maxHeight) {
+                        otherContent.style.maxHeight = null;
+                        otherContent.previousElementSibling.querySelector('span:last-child').classList.remove('rotate-180');
+                    }
+                });
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.classList.add('rotate-180');
+            }
+        });
+    });
+}
+
+
+// --- CONTACTS DISPLAY FUNCTIONALITY ---
+
+
+/**
+ * Renders the list of key contacts.
+ */
+function renderContacts() {
+    const contactsList = document.getElementById('contacts-list');
+    contactsList.innerHTML = ''; // Clear previous content
+
+
+    contactData.forEach(contact => {
+        const contactCard = document.createElement('div');
+        contactCard.className = 'bg-white p-4 rounded-lg shadow flex items-center justify-between';
+        contactCard.innerHTML = `
+            <div>
+                <h3 class="font-bold text-lg text-stone-800">${contact.name}</h3>
+                <p class="text-sm text-stone-600">${contact.role}</p>
+            </div>
+            <a href="tel:${contact.phone}" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                📞 ${contact.phone}
+            </a>
+        `;
+        contactsList.appendChild(contactCard);
+    });
+}
+
+
+// --- CHATBOT FUNCTIONALITY (GEMINI API INTEGRATION) ---
+const chatHistoryElement = document.getElementById('chat-history');
+const chatInput = document.getElementById('chat-input');
+const sendChatBtn = document.getElementById('send-chat-btn');
+const sendIcon = document.getElementById('send-icon');
+const loadingSpinner = document.getElementById('loading-spinner');
+
+
+let chatHistory = [{ role: "model", parts: [{ text: "¡Hola! Soy tu asistente de seguridad para el Monegros Desert Festival 2025. Pregúntame sobre riesgos, protocolos o cualquier duda de seguridad laboral." }] }];
+
+
+/**
+ * Adds a message to the chat history display.
+ * @param {string} text - The message text.
+ * @param {string} sender - 'user' or 'ai'.
+ */
+function addMessageToChat(text, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}`;
+    messageDiv.textContent = text;
+    chatHistoryElement.appendChild(messageDiv);
+    chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight; // Scroll to bottom
+}
+
+
+/**
+ * Sends a message to the Gemini API and displays the response.
+ */
+async function sendMessage() {
+    const prompt = chatInput.value.trim();
+    if (prompt === '') return;
+
+
+    addMessageToChat(prompt, 'user');
+    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+    chatInput.value = ''; // Clear input
+
+
+    // Show loading spinner
+    sendIcon.classList.add('hidden');
+    loadingSpinner.classList.remove('hidden');
+    sendChatBtn.disabled = true;
+
+
+    try {
+        const payload = { contents: chatHistory };
+        const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+
+        const result = await response.json();
+
+
+        if (result.candidates && result.candidates.length > 0 &&
+            result.candidates[0].content && result.candidates[0].content.parts &&
+            result.candidates[0].content.parts.length > 0) {
+            const aiResponse = result.candidates[0].content.parts[0].text;
+            addMessageToChat(aiResponse, 'ai');
+            chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+        } else {
+            addMessageToChat('Lo siento, no pude obtener una respuesta. Inténtalo de nuevo.', 'ai');
+            console.error('Unexpected API response structure:', result);
+        }
+    } catch (error) {
+        console.error('Error calling Gemini API:', error);
+        addMessageToChat('Hubo un error al conectar con el asistente. Por favor, inténtalo más tarde.', 'ai');
+    } finally {
+        // Hide loading spinner
+        sendIcon.classList.remove('hidden');
+        loadingSpinner.classList.add('hidden');
+        sendChatBtn.disabled = false;
+    }
+}
+
+
+// --- EVENT LISTENERS ---
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize the heat risk chart on page load
+    updateHeatRiskChart();
+
+
+    // Render initial risks (general view)
+    renderRisks('general');
+
+
+    // Render protocols
+    renderProtocols();
+
+
+    // Render climatic actions
+    renderClimaticActions();
+
+
+    // Render contacts
+    renderContacts();
+
+
+    // Navigation buttons event listeners
+    document.querySelectorAll('.nav-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = this.dataset.target;
+            navigateTo(target);
+        });
+    });
+
+
+    // Job selector event listener
+    document.getElementById('job-selector').addEventListener('change', function() {
+        renderRisks(this.value);
+    });
+
+
+    // Chatbot send button and enter key listener
+    sendChatBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+});
+</script>
+</body>
+</html>
+�
