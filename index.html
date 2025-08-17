@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Prevención - Elrow Town 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Bungee&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0d1a45; }
+        .bg-elrow-blue { background-color: #0d1a45; }
+        .text-elrow-yellow { color: #fdf50b; }
+        .text-elrow-red { color: #e91e63; }
+        .border-elrow-orange { border-color: #ff6d00; }
+        .bg-card-dark { background-color: rgba(255, 255, 255, 0.1); }
+        .nav-icon { fill: currentColor; }
+        .tab-button { transition: background-color 0.3s, color 0.3s; }
+        .tab-button.active .nav-icon { fill: #fdf50b; }
+        .tab-button.active { background-color: rgba(255, 255, 255, 0.1); color: #fdf50b; }
+        
+        /* Estilos específicos para la página de inicio */
+        .neon-glow-red { text-shadow: none; } /* Removed neon glow effect */
+        .neon-glow-yellow { text-shadow: none; } /* Removed neon glow effect */
+        
+        /* Fuentes para los títulos y los párrafos */
+        .title-font { font-family: 'Luckiest Guy', cursive; }
+        .bungee-font { font-family: 'Bungee', cursive; }
+        .body-font { font-family: 'Inter', sans-serif; font-weight: 400; }
+        
+        /* Estilos del juego Pong */
+        #pongCanvas {
+            background-color: #000;
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(253, 245, 11, 0.8), 0 0 10px rgba(255, 255, 255, 0.5);
+            margin: 0 auto;
+            display: block;
+            touch-action: none; /* Evita que el navegador haga zoom o scroll en el canvas */
+        }
+
+        /* Animación y estilo para los mensajes de prevención */
+        .prevention-message {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            text-align: center;
+        }
+
+        .prevention-message.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen text-white">
+
+    <!-- Header -->
+    <header class="p-4 text-center bg-elrow-blue">
+        <h1 class="text-3xl font-bold text-elrow-yellow title-font">elrow town marbella 2025</h1>
+        <p class="text-sm body-font">Guía de Prevención</p>
+    </header>
+
+    <!-- Main Content Area (dynamic) -->
+    <main id="app-content" class="flex-grow p-4 overflow-y-auto pb-20"></main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-elrow-blue border-t border-gray-700 shadow-lg z-50">
+        <ul class="flex justify-around text-center overflow-x-auto whitespace-nowrap">
+            <li class="flex-1">
+                <button id="tab-home" class="tab-button w-full p-3 text-center text-gray-400 hover:bg-card-dark active">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 mx-auto nav-icon"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" /></svg>
+                    <span class="text-xs">Inicio</span>
+                </button>
+            </li>
+            <li class="flex-1">
+                <button id="tab-premises" class="tab-button w-full p-3 text-center text-gray-400 hover:bg-card-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 mx-auto nav-icon"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" /></svg>
+                    <span class="text-xs">Premisas</span>
+                </button>
+            </li>
+            <li class="flex-1">
+                <button id="tab-concurrent-risks" class="tab-button w-full p-3 text-center text-gray-400 hover:bg-card-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 mx-auto nav-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
+                    <span class="text-xs">Riesgos</span>
+                </button>
+            </li>
+            <li class="flex-1">
+                <button id="tab-protocols" class="tab-button w-full p-3 text-center text-gray-400 hover:bg-card-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 mx-auto nav-icon"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" /></svg>
+                    <span class="text-xs">Protocolos</span>
+                </button>
+            </li>
+            <li class="flex-1">
+                <button id="tab-game" class="tab-button w-full p-3 text-center text-gray-400 hover:bg-card-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 mx-auto nav-icon"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z" /></svg>
+                    <span class="text-xs">Juego</span>
+                </button>
+            </li>
+            <li class="flex-1">
+                <button id="tab-contacts" class="tab-button w-full p-3 text-center text-gray-400 hover:bg-card-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 mx-auto nav-icon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                    <span class="text-xs">Contactos</span>
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+        const appContent = document.getElementById('app-content');
+        let gameInterval = null; // Variable para controlar el bucle del juego
+        let preventionMessageInterval = null; // Variable para controlar el bucle de mensajes de prevención
+
+        const tabs = {
+            'home': () => {
+                // Función para mostrar la página de inicio
+                appContent.innerHTML = `
+                    <div class="text-center p-4">
+                        <!-- Logo text instead of image -->
+                        <div class="mx-auto mb-4 text-elrow-yellow text-xl font-bold bungee-font">VTècnics en Ruta</div>
+                        <h2 class="text-4xl font-bold text-elrow-yellow title-font">GRACIAS POR ACOMPAÑARNOS</h2>
+                        <p class="text-gray-400 mt-2 body-font">Consulta rápidamente información crucial para tu seguridad en el evento.</p>
+                        <div id="prevention-message-container" class="mt-4 text-lg font-bold text-elrow-red h-8"></div>
+                        <div class="my-6">
+                            <a href="tel:112" class="inline-block px-8 py-4 text-xl font-bold text-white bg-red-600 rounded-lg shadow-lg hover:bg-red-700 transition-colors body-font">
+                                Llamar a Emergencias (112)
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección de Riesgo por Calor -->
+                    <div class="p-4 rounded-xl shadow-lg mt-6 bg-card-dark border-elrow-orange border">
+                        <h3 class="text-lg font-bold text-elrow-yellow mb-2 bungee-font">Riesgo por Calor</h3>
+                        <p class="text-gray-400 mb-2 text-sm body-font">Ingresa la temperatura actual (°C) para evaluar el riesgo:</p>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <input type="number" id="temperature-input" placeholder="Ej. 30" class="w-full p-2 bg-gray-800 text-white border border-elrow-orange rounded-md body-font">
+                            <button id="check-temp-button" class="bg-elrow-yellow text-black px-4 py-2 rounded-md font-bold hover:opacity-80 transition-opacity body-font">Ver riesgo</button>
+                        </div>
+                        <div id="heat-risk-info" class="p-3 rounded-md text-sm text-center font-bold body-font">
+                            <p class="text-gray-500">Nivel de riesgo se mostrará aquí.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Riesgos por Puesto de Trabajo -->
+                    <div class="p-4 rounded-xl shadow-lg mt-6 bg-card-dark border-elrow-orange border">
+                        <h3 class="text-lg font-bold text-elrow-yellow mb-2 bungee-font">Riesgos por Puesto de Trabajo</h3>
+                        <p class="text-gray-400 mb-4 text-sm body-font">Selecciona tu puesto para ver los riesgos y medidas preventivas específicas.</p>
+                        <div class="mb-6">
+                            <select id="job-select" class="w-full p-2 bg-gray-800 text-white border border-elrow-orange rounded-md body-font">
+                                <option value="">-- Selecciona tu puesto --</option>
+                                <option value="Personal de Producción">Personal de Producción</option>
+                                <option value="Montador de Estructuras">Montador de Estructuras</option>
+                                <option value="Técnicos de Sonido, Iluminación y Vídeo">Técnicos de Sonido, Iluminación y Vídeo</option>
+                                <option value="Backliners">Backliners</option>
+                                <option value="Personal de Bares y Restauración">Personal de Bares y Restauración</option>
+                                <option value="Personal de Limpieza">Personal de Limpieza</option>
+                                <option value="Personal de Seguridad">Personal de Seguridad</option>
+                                <option value="Operador de Carretilla Elevadora">Operador de Carretilla Elevadora</option>
+                                <option value="Personal de Trabajos en Altura">Personal de Trabajos en Altura</option>
+                                <option value="Operador de PEMP">Operador de PEMP</option>
+                            </select>
+                        </div>
+                        <div id="risk-info" class="body-font">
+                            <!-- Content will be injected here by JS -->
+                        </div>
+                    </div>
+                `;
+
+                startPreventionMessages();
+
+                // Logic for Heat Risk
+                const temperatureInput = document.getElementById('temperature-input');
+                const checkTempButton = document.getElementById('check-temp-button');
+                const heatRiskInfo = document.getElementById('heat-risk-info');
+
+                checkTempButton.addEventListener('click', () => {
+                    const temp = parseFloat(temperatureInput.value);
+                    if (isNaN(temp)) {
+                        heatRiskInfo.innerHTML = `<p class="text-red-400">Por favor, introduce una temperatura válida.</p>`;
+                        heatRiskInfo.className = 'p-3 rounded-md text-sm text-center font-bold bg-gray-900 border-red-500 border';
+                        return;
+                    }
+
+                    let riskLevel, color, bgClass;
+                    if (temp >= 54) {
+                        riskLevel = "Peligro Extremo";
+                        color = "text-white";
+                        bgClass = "bg-red-600";
+                    } else if (temp >= 41) {
+                        riskLevel = "Peligro";
+                        color = "text-white";
+                        bgClass = "bg-orange-600";
+                    } else if (temp >= 33) {
+                        riskLevel = "Precaución Extrema";
+                        color = "text-gray-900";
+                        bgClass = "bg-yellow-400";
+                    } else if (temp >= 27) {
+                        riskLevel = "Precaución";
+                        color = "text-gray-900";
+                        bgClass = "bg-yellow-200";
+                    } else {
+                        riskLevel = "Riesgo bajo";
+                        color = "text-white";
+                        bgClass = "bg-green-600";
+                    }
+                    heatRiskInfo.innerHTML = `<p><strong>Nivel de riesgo:</strong> ${riskLevel}</p>`;
+                    heatRiskInfo.className = `p-3 rounded-md text-sm text-center font-bold ${bgClass} ${color} body-font`;
+                });
+
+                // Logic for Job Risks
+                const puestos = {
+                    'Personal de Producción': {
+                        riesgos: ['Caída de personas al mismo nivel por desorden y acumulación de escombros.', 'Caída de personas a distinto nivel por falta de protecciones o iluminación.', 'Golpes y cortes con herramientas.'],
+                        metodos: ['Mantener el orden y limpieza en el lugar de trabajo.', 'Uso de EPIs y barandillas de protección.'],
+                        epis: ['Casco de seguridad', 'Chaleco reflectante de alta visibilidad', 'Guantes de trabajo']
+                    },
+                    'Montador de Estructuras': {
+                        riesgos: ['Caída desde altura por falta de sistemas de seguridad.', 'Golpes contra estructuras.', 'Cortes con perfiles metálicos.'],
+                        metodos: ['Uso de arnés y sistemas anticaídas.', 'Verificar la estabilidad de la estructura antes de subir.'],
+                        epis: ['Casco con barboquejo', 'Guantes de trabajo', 'Calzado de seguridad con puntera reforzada', 'Sistema completo anticaídas (arnés, anclajes, etc.).']
+                    },
+                    'Técnicos de Sonido, Iluminación y Vídeo': {
+                        riesgos: ['Contacto eléctrico directo o indirecto.', 'Exposición a ruido excesivo.', 'Golpes, choques contra objetos inmóviles.', 'Caídas al mismo nivel por cables y equipos en el suelo.', 'Sobreesfuerzos por manejo manual de cargas.'],
+                        metodos: ['Trabajar siempre sin tensión eléctrica.', 'Usar protección auditiva en zonas ruidosas.', 'Organizar y señalizar el cableado para evitar caídas.', 'Utilizar equipos de elevación o ayuda para el manejo de equipos pesados.'],
+                        epis: ['Calzado de seguridad.', 'Guantes dieléctricos (para trabajos eléctricos).', 'Protección auditiva (cascos o tapones).']
+                    },
+                    'Backliners': {
+                        riesgos: ['Sobreesfuerzos por manejo manual de cargas (amplificadores, instrumentos, etc.).', 'Golpes o cortes con equipos y cajas.', 'Caídas al mismo nivel.'],
+                        metodos: ['Pedir ayuda para el transporte de equipos pesados o voluminosos.', 'Utilizar carretillas o "dollies" para el movimiento de carga.', 'Mantener el orden en el área de trabajo y el escenario.'],
+                        epis: ['Calzado de seguridad con puntera reforzada.', 'Guantes de trabajo.']
+                    },
+                    'Personal de Bares y Restauración': {
+                        riesgos: ['Caídas al mismo nivel por derrames o suelos mojados.', 'Cortes con cuchillos o utensilios.', 'Estrés térmico por exposición al calor.'],
+                        metodos: ['Limpiar derrames inmediatamente.', 'Usar calzado antideslizante.', 'Hidratarse frecuentemente y hacer pausas.'],
+                        epis: ['Calzado de seguridad antideslizante.', 'Guantes de protección.']
+                    },
+                    'Personal de Limpieza': {
+                        riesgos: ['Caídas al mismo nivel por suelos mojados o resbaladizos.', 'Cortes con residuos afilados.', 'Exposición a productos químicos de limpieza.'],
+                        metodos: ['Señalizar las zonas húmedas o mojadas.', 'Usar guantes de seguridad y calzado antideslizante.', 'Leer las etiquetas de los productos y usar EPIs apropiados.'],
+                        epis: ['Calzado de seguridad antideslizante', 'Guantes de nitrilo o de protección química', 'Mascarilla de protección respiratoria (si es necesario)']
+                    },
+                    'Personal de Seguridad': {
+                        riesgos: ['Agresiones por parte del público.', 'Estrés y fatiga.', 'Atropellos en zonas de tráfico de vehículos.'],
+                        metodos: ['Mantener la calma y usar protocolos de mediación.', 'Hacer pausas y rotar turnos.', 'Prestar atención a la circulación de vehículos y maquinaria.'],
+                        epis: ['Chaleco de seguridad/antibala (si es necesario)', 'Calzado de seguridad', 'Equipo de comunicación (radios)']
+                    },
+                    'Operador de Carretilla Elevadora': {
+                        riesgos: ['Atropellos a peatones o colisión con vehículos.', 'Vuelco de la carretilla por sobrecarga o terreno irregular.', 'Caída de la carga.'],
+                        metodos: ['Manejar a velocidad segura y con atención.', 'No exceder el peso máximo de carga.', 'Mantener la carga a una altura segura y respetar la señalización.'],
+                        epis: ['Casco de seguridad', 'Chaleco reflectante de alta visibilidad', 'Calzado de seguridad con puntera reforzada']
+                    },
+                    'Personal de Trabajos en Altura': {
+                        riesgos: ['Caída de personas a distinto nivel.', 'Caída de objetos sobre terceros.', 'Golpes contra estructuras.'],
+                        metodos: ['Utilizar siempre el arnés de seguridad anclado a un punto seguro.', 'Delimitar y señalizar el área de trabajo en la parte inferior para evitar el paso de personas.', 'Revisar el equipo de protección y las herramientas antes de cada uso.'],
+                        epis: ['Casco de seguridad con barboquejo.', 'Arnés de seguridad.', 'Guantes de protección.', 'Calzado de seguridad.', 'Línea de anclaje (cuerda de vida).']
+                    },
+                    'Operador de PEMP': {
+                        riesgos: ['Vuelco de la máquina por terreno irregular o sobrecarga.', 'Atropellos o golpes a peatones o vehículos.', 'Atrapamientos entre la cesta y las estructuras.', 'Caída desde la cesta.'],
+                        metodos: ['Operar solo en superficies estables y niveladas.', 'No sobrepasar la capacidad máxima de carga de la plataforma.', 'Mantener la distancia de seguridad con respecto a otros vehículos y personas.', 'Utilizar siempre el arnés de seguridad anclado a la cesta.'],
+                        epis: ['Casco de seguridad.', 'Chaleco reflectante de alta visibilidad.', 'Arnés de seguridad.', 'Calzado de seguridad.']
+                    }
+                };
+
+                document.getElementById('job-select').addEventListener('change', (e) => {
+                    const puestoSeleccionado = e.target.value;
+                    const riskInfoDiv = document.getElementById('risk-info');
+                    if (puestoSeleccionado && puestos[puestoSeleccionado]) {
+                        const info = puestos[puestoSeleccionado];
+                        riskInfoDiv.innerHTML = `
+                            <div class="p-4 bg-gray-900 rounded-lg shadow-md mb-4 border border-elrow-orange body-font">
+                                <h3 class="text-sm font-bold text-elrow-yellow mb-2">Riesgos Principales:</h3>
+                                <ul class="list-disc list-inside text-gray-300 text-sm">
+                                    ${info.riesgos.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="p-4 bg-gray-900 rounded-lg shadow-md mb-4 border border-elrow-orange body-font">
+                                <h3 class="text-sm font-bold text-elrow-yellow mb-2">Métodos de Trabajo Seguro:</h3>
+                                <ul class="list-disc list-inside text-gray-300 text-sm">
+                                    ${info.metodos.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="p-4 bg-gray-900 rounded-lg shadow-md border border-elrow-orange body-font">
+                                <h3 class="text-sm font-bold text-elrow-yellow mb-2">EPIs Necesarios:</h3>
+                                <ul class="list-disc list-inside text-gray-300 text-sm">
+                                    ${info.epis.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    } else {
+                        riskInfoDiv.innerHTML = '';
+                    }
+                });
+            },
+            'premises': () => {
+                // Función para mostrar la página de premisas
+                appContent.innerHTML = `
+                    <h2 class="text-xl font-bold text-elrow-yellow mb-4 bungee-font">Premisas para el Evento</h2>
+                    <p class="text-gray-400 mb-4 body-font">Directrices de Prevención de Riesgos Laborales para el correcto desarrollo del evento en las fases de montaje y desmontaje.</p>
+                    <div class="space-y-4 body-font">
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Hidratación y Descansos</h3>
+                            <p class="text-sm text-gray-300">Se facilitará agua a todos los trabajadores. No está permitido fumar en el centro de trabajo, salvo en zonas habilitadas. Se establecerán pausas frecuentes en zonas de sombra para evitar golpes de calor.</p>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Manejo de Vehículos y Maquinaria</h3>
+                            <p class="text-sm text-gray-300">Los conductores de carretillas elevadoras recibirán indicaciones de una sola persona. Los trabajadores deben situarse en zonas seguras, fuera del alcance de las cargas y de las maniobras de la maquinaria. En zonas de grúa, solo debe permanecer el personal indispensable y nunca bajo las cargas.</p>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Trabajos en Altura</h3>
+                            <p class="text-sm text-gray-300">Cuando se realicen trabajos en altura, se deberá delimitar la zona para evitar que otros trabajadores se sitúen debajo.</p>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Acceso a Zonas de Obra</h3>
+                            <p class="text-sm text-gray-300">Todas las zonas consideradas como obra deberán estar delimitadas. Únicamente podrá acceder el personal autorizado por el Coordinador de Seguridad y Salud en fase de ejecución.</p>
+                        </div>
+                    </div>
+                `;
+            },
+            'concurrent-risks': () => {
+                // Función para mostrar la página de riesgos concurrentes
+                appContent.innerHTML = `
+                    <h2 class="text-xl font-bold text-elrow-yellow mb-4 bungee-font">Riesgos Concurrentes</h2>
+                    <p class="text-gray-400 mb-4 body-font">Riesgos derivados de la coordinación de actividades empresariales y medidas preventivas.</p>
+                    <div class="space-y-4 body-font">
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Caída de personas a distinto nivel</h3>
+                            <p class="text-sm text-gray-300">En las áreas de trabajo pueden existir zonas con desnivel superior a 2 metros de altura.</p>
+                            <p class="text-sm text-gray-300 font-bold mt-2">Medidas de prevención:</p>
+                            <ul class="list-disc list-inside text-gray-300 text-sm">
+                                <li>Respetar la señalización y balizamiento de precaución.</li>
+                                <li>Extremar las precauciones sobre tarimas.</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Golpes contra objetos y atropellos</h3>
+                            <p class="text-sm text-gray-300">Riesgo en las zonas habilitadas para la circulación de vehículos y maquinaria.</p>
+                            <p class="text-sm text-gray-300 font-bold mt-2">Medidas de prevención:</p>
+                            <ul class="list-disc list-inside text-gray-300 text-sm">
+                                <li>No circular por la vía de vehículos.</li>
+                                <li>Extremar precauciones en zonas de cruce.</li>
+                                <li>Respetar señalización y balizamiento.</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Caída de objetos por desplome</h3>
+                            <p class="text-sm text-gray-300">Riesgo al manipular objetos, herramientas o estructuras.</p>
+                            <p class="text-sm text-gray-300 font-bold mt-2">Medidas de prevención:</p>
+                            <ul class="list-disc list-inside text-gray-300 text-sm">
+                                <li>Verificar la estabilidad de los objetos.</li>
+                                <li>No sobrecargar estructuras.</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Contacto eléctrico directo o indirecto</h3>
+                            <p class="text-sm text-gray-300">Riesgo por la manipulación de cuadros eléctricos, cables y equipos.</p>
+                            <p class="text-sm text-gray-300 font-bold mt-2">Medidas de prevención:</p>
+                            <ul class="list-disc list-inside text-gray-300 text-sm">
+                                <li>No manipular conexiones eléctricas si no se está autorizado.</li>
+                                <li>No usar equipos con cables o enchufes en mal estado.</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange">
+                            <h3 class="text-lg font-bold text-elrow-yellow mb-2">Riesgo de incendio</h3>
+                            <p class="text-sm text-gray-300">Riesgo en zonas de acumulación de materiales inflamables.</p>
+                            <p class="text-sm text-gray-300 font-bold mt-2">Medidas de prevención:</p>
+                            <ul class="list-disc list-inside text-gray-300 text-sm">
+                                <li>Evitar la acumulación de materiales inflamables.</li>
+                                <li>Respetar la señalización de prohibido fumar.</li>
+                                <li>Seguir las indicaciones del personal de seguridad en caso de incendio.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            },
+            'protocols': () => {
+                // Función para mostrar la página de protocolos
+                appContent.innerHTML = `
+                    <h2 class="text-xl font-bold text-elrow-yellow mb-4 bungee-font">Protocolos y Medidas</h2>
+                    <p class="text-gray-400 mb-4 body-font">Aquí puedes encontrar los protocolos de emergencia y medidas generales.</p>
+                    
+                    <div class="accordion-section mb-2 bg-card-dark rounded-xl">
+                        <button class="accordion-header w-full text-left p-3 font-semibold text-gray-300 flex justify-between items-center rounded-xl">
+                            Medidas de Emergencia Generales
+                            <span class="accordion-icon">+</span>
+                        </button>
+                        <div class="accordion-content p-3 hidden text-gray-300 body-font">
+                            <p class="text-sm font-bold mb-2">PROTEGER-AVISAR-SOCORRER (PAS)</p>
+                            <ul class="list-disc list-inside text-sm">
+                                <li><strong>PROTEGER:</strong> Si eres testigo de un accidente, protege al accidentado para que su situación no se agrave. Retíralo a una zona segura, pero solo si no le causa un peligro mayor.</li>
+                                <li><strong>AVISAR:</strong> Avisa a los servicios de emergencia (112) y al jefe de producción o encargado de prevención.</li>
+                                <li><strong>SOCORRER:</strong> Si tienes formación en primeros auxilios, atiende al accidentado. Si no, espera la llegada de los profesionales.</li>
+                            </ul>
+                            <p class="text-sm font-bold mt-4 mb-2">Comunicaciones Inmediatas en caso de Accidente Laboral:</p>
+                            <ul class="list-disc list-inside text-sm">
+                                <li><strong>Accidentes leves:</strong> Se debe informar a la Dirección de la Empresa, al Coordinador de Prevención de Riesgos y a la organización de la empresa afectada.</li>
+                                <li><strong>Accidentes graves y mortales:</strong> Además de lo anterior, se debe avisar a la Autoridad Laboral y al Juzgado de Guardia (en caso de accidente mortal) para las investigaciones judiciales pertinentes.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accordion-section mb-2 bg-card-dark rounded-xl">
+                        <button class="accordion-header w-full text-left p-3 font-semibold text-gray-300 flex justify-between items-center rounded-xl">
+                            Riesgos por Exposición al Calor
+                            <span class="accordion-icon">+</span>
+                        </button>
+                        <div class="accordion-content p-3 hidden text-gray-300 body-font">
+                            <p class="text-sm">Según las normativas de la AEMET y el Instituto Regional de Seguridad y Salud en el Trabajo, se deben tomar las siguientes medidas frente a las altas temperaturas:</p>
+                            <ul class="list-disc list-inside text-sm mt-2">
+                                <li><strong>Organización del Trabajo:</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>Evitar trabajar al aire libre en las horas de mayor calor.</li>
+                                        <li>Organizar los trabajos que exigen esfuerzo físico para la primera hora de la mañana.</li>
+                                        <li>Rotar a los trabajadores en actividades y horarios si es necesario.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Protección Personal:</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>Usar ropa ligera, de algodón y de colores claros.</li>
+                                        <li>Utilizar gorra o sombrero.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Hidratación y Pausas:</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>Mantenerse hidratado de forma constante. Se facilitará agua a todos los trabajadores.</li>
+                                        <li>Descansar a la sombra o en lugares frescos y con aire acondicionado.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accordion-section mb-2 bg-card-dark rounded-xl">
+                        <button class="accordion-header w-full text-left p-3 font-semibold text-gray-300 flex justify-between items-center rounded-xl">
+                            Manejo de Combustibles (Gasolina)
+                            <span class="accordion-icon">+</span>
+                        </button>
+                        <div class="accordion-content p-3 hidden text-gray-300 body-font">
+                            <p class="text-sm">Para el acopio seguro de gasolina, se deben seguir las siguientes normas de seguridad:</p>
+                            <ul class="list-disc list-inside text-sm mt-2">
+                                <li>Utilizar recipientes homologados y de alta calidad, diseñados específicamente para almacenar gasolina.</li>
+                                <li>Almacenar los bidones en un lugar fresco y seco, lejos de fuentes de calor, chispas, llamas o luz solar directa.</li>
+                                <li>Mantener los depósitos siempre bien cerrados.</li>
+                                <li>Añadir ventilación para evitar la acumulación de vapores y reducir el riesgo de explosión.</li>
+                                <li>Prohibido fumar o encender cualquier tipo de chispa o fuego en el lugar de acopio.</li>
+                                <li>No acopiar junto con gasolina otras sustancias o materiales inflamables.</li>
+                                <li>La zona de acopio debe tener acceso restringido y estar delimitada con señalización específica.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                document.querySelectorAll('.accordion-header').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.nextElementSibling;
+                        const icon = button.querySelector('.accordion-icon');
+                        content.classList.toggle('hidden');
+                        icon.textContent = content.classList.contains('hidden') ? '+' : '-';
+                    });
+                });
+            },
+            'game': () => {
+                // Función para mostrar la página del juego
+                appContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-4">
+                        <h2 class="text-xl font-bold text-elrow-yellow mb-4 bungee-font">¡Juega al Pong!</h2>
+                        <p class="text-gray-400 mb-4 text-center body-font">
+                            Desliza tu dedo hacia arriba y abajo en la mitad izquierda de la pantalla para mover tu paleta.
+                        </p>
+                        <canvas id="pongCanvas" width="300" height="400" class="rounded-lg mb-4"></canvas>
+                        <div id="game-info" class="text-white text-lg font-bold body-font">
+                            <span id="player-score">0</span> - <span id="computer-score">0</span>
+                        </div>
+                        <button id="restart-button" class="mt-4 px-4 py-2 bg-elrow-yellow text-black font-bold rounded-lg hover:opacity-80 transition-opacity body-font">
+                            Reiniciar Juego
+                        </button>
+                        <div id="game-message" class="mt-4 text-center text-xl font-bold bungee-font"></div>
+                    </div>
+                `;
+
+                // Pong game logic
+                const canvas = document.getElementById('pongCanvas');
+                const ctx = canvas.getContext('2d');
+                const playerScoreDisplay = document.getElementById('player-score');
+                const computerScoreDisplay = document.getElementById('computer-score');
+                const gameMessageDisplay = document.getElementById('game-message');
+                const restartButton = document.getElementById('restart-button');
+
+                let player, computer, ball;
+                let playerSpeed = 5;
+                let computerScore = 0;
+                let playerScore = 0;
+                let gameActive = false;
+                
+                function setupGame() {
+                    player = { x: 10, y: canvas.height / 2 - 40, width: 10, height: 80, dy: 0 };
+                    computer = { x: canvas.width - 20, y: canvas.height / 2 - 40, width: 10, height: 80, dy: 0 };
+                    ball = { x: canvas.width / 2, y: canvas.height / 2, size: 8, dx: 3, dy: 3 };
+                    playerScore = 0;
+                    computerScore = 0;
+                    updateScores();
+                    gameMessageDisplay.textContent = "";
+                    gameActive = true;
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Dibujar la cancha
+                    ctx.fillStyle = '#fdf50b';
+                    ctx.fillRect(player.x, player.y, player.width, player.height);
+                    ctx.fillRect(computer.x, computer.y, computer.width, computer.height);
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Línea central
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2, 0);
+                    ctx.lineTo(canvas.width / 2, canvas.height);
+                    ctx.stroke();
+                }
+
+                function update() {
+                    if (!gameActive) return;
+
+                    // Lógica simple de la IA de la computadora
+                    if (ball.dx > 0) { // Si la pelota se mueve hacia la derecha
+                        if (computer.y + computer.height / 2 < ball.y) {
+                            computer.y += 2;
+                        } else {
+                            computer.y -= 2;
+                        }
+                    }
+
+                    // Limitar el movimiento de la paleta de la computadora
+                    if (computer.y < 0) computer.y = 0;
+                    if (computer.y + computer.height > canvas.height) computer.y = canvas.height - computer.height;
+
+                    // Mover la pelota
+                    ball.x += ball.dx;
+                    ball.y += ball.dy;
+
+                    // Colisión con la parte superior/inferior
+                    if (ball.y + ball.size > canvas.height || ball.y - ball.size < 0) {
+                        ball.dy *= -1;
+                    }
+
+                    // Colisión con las paletas
+                    if (ball.dx < 0 && ball.x - ball.size < player.x + player.width &&
+                        ball.y > player.y && ball.y < player.y + player.height) {
+                        ball.dx *= -1;
+                        ball.dx *= 1.1; // Aumentar la velocidad
+                        ball.dy = (ball.y - (player.y + player.height / 2)) * 0.2;
+                    } else if (ball.dx > 0 && ball.x + ball.size > computer.x &&
+                        ball.y > computer.y && ball.y < computer.y + computer.height) {
+                        ball.dx *= -1;
+                        ball.dx *= 1.1; // Aumentar la velocidad
+                        ball.dy = (ball.y - (computer.y + computer.height / 2)) * 0.2;
+                    }
+                    
+                    // Si la pelota sale de la pantalla
+                    if (ball.x < 0) {
+                        computerScore++;
+                        updateScores();
+                        resetBall();
+                    } else if (ball.x > canvas.width) {
+                        playerScore++;
+                        updateScores();
+                        resetBall();
+                    }
+                    
+                    checkWinCondition();
+                    draw();
+                    gameInterval = requestAnimationFrame(update);
+                }
+                
+                function resetBall() {
+                    ball.x = canvas.width / 2;
+                    ball.y = canvas.height / 2;
+                    ball.dx = (Math.random() > 0.5 ? 3 : -3);
+                    ball.dy = (Math.random() * 6) - 3;
+                }
+
+                function updateScores() {
+                    playerScoreDisplay.textContent = playerScore;
+                    computerScoreDisplay.textContent = computerScore;
+                }
+
+                function checkWinCondition() {
+                    if (playerScore >= 5) {
+                        gameMessageDisplay.textContent = "¡Has ganado!";
+                        gameActive = false;
+                        cancelAnimationFrame(gameInterval);
+                    } else if (computerScore >= 5) {
+                        gameMessageDisplay.textContent = "¡Has perdido!";
+                        gameActive = false;
+                        cancelAnimationFrame(gameInterval);
+                    }
+                }
+                
+                // Event listeners for touch input
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault(); // Previene el scroll de la página en dispositivos móviles
+                    const touchY = e.touches[0].clientY;
+                    const rect = canvas.getBoundingClientRect();
+                    const newY = touchY - rect.top - player.height / 2;
+
+                    // Limitar el movimiento de la paleta del jugador dentro del canvas
+                    player.y = Math.max(0, Math.min(newY, canvas.height - player.height));
+                });
+
+                // Start / Restart button
+                restartButton.addEventListener('click', () => {
+                    setupGame();
+                    update();
+                });
+
+                // Initial setup when the tab is loaded
+                setupGame();
+                update();
+            },
+            'contacts': () => {
+                // Función para mostrar la página de contactos
+                appContent.innerHTML = `
+                    <h2 class="text-xl font-bold text-elrow-yellow mb-4 bungee-font">Contactos Clave</h2>
+                    <p class="text-gray-400 mb-4 body-font">Información de contacto para seguridad y emergencias.</p>
+                    
+                    <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange mb-4 body-font">
+                        <h3 class="text-lg font-bold text-elrow-yellow mb-2">Emergencias</h3>
+                        <a href="tel:112" class="text-blue-400 hover:underline">Teléfono: 112</a>
+                    </div>
+                    <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange mb-4 body-font">
+                        <h3 class="text-lg font-bold text-elrow-yellow mb-2">Producción</h3>
+                        <ul class="text-gray-300 text-sm space-y-1">
+                            <li><strong>Narcís:</strong> <a href="tel:616042619" class="text-blue-400 hover:underline">616 042 619</a></li>
+                            <li><strong>Kostas:</strong> <a href="tel:674469495" class="text-blue-400 hover:underline">674 469 495</a></li>
+                            <li><strong>Anna:</strong> <a href="tel:690228692" class="text-blue-400 hover:underline">690 228 692</a></li>
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange mb-4 body-font">
+                        <h3 class="text-lg font-bold text-elrow-yellow mb-2">Recurso Preventivo</h3>
+                        <ul class="text-gray-300 text-sm space-y-1">
+                            <li><strong>Anjos:</strong> <a href="tel:659050451" class="text-blue-400 hover:underline">659 050 451</a></li>
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-xl shadow-lg bg-card-dark border border-elrow-orange mb-4 body-font">
+                        <h3 class="text-lg font-bold text-elrow-yellow mb-2">Oficinas VTècnics</h3>
+                        <a href="tel:636230970" class="text-blue-400 hover:underline">636 230 970</a>
+                    </div>
+                `;
+            }
+        };
+
+        const preventionMessages = [
+            "Proteger: Retira al accidentado a una zona segura.",
+            "Avisar: Llama al 112 y al jefe de producción.",
+            "Socorrer: Si tienes formación, atiende. Si no, espera.",
+            "No obstaculices las salidas ni los medios de extinción.",
+            "Usa siempre tus equipos de protección personal (EPIs).",
+            "Mantén tu área de trabajo limpia y ordenada."
+        ];
+
+        let currentMessageIndex = 0;
+
+        function startPreventionMessages() {
+            const container = document.getElementById('prevention-message-container');
+            if (!container) return;
+
+            const updateMessage = () => {
+                container.classList.remove('show');
+                setTimeout(() => {
+                    container.textContent = preventionMessages[currentMessageIndex];
+                    container.classList.add('show');
+                    currentMessageIndex = (currentMessageIndex + 1) % preventionMessages.length;
+                }, 1000); // Wait for fade-out before changing text
+            };
+
+            updateMessage();
+            preventionMessageInterval = setInterval(updateMessage, 5000);
+        }
+
+        function stopPreventionMessages() {
+            if (preventionMessageInterval) {
+                clearInterval(preventionMessageInterval);
+                preventionMessageInterval = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show home page on initial load
+            tabs['home']();
+
+            // Handle navigation
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    // Add active class to the clicked button
+                    button.classList.add('active');
+                    
+                    const tabId = button.id.replace('tab-', '');
+                    
+                    // Cancel game animation and prevention messages if navigating away from home/game tabs
+                    if (tabId !== 'game' && gameInterval) {
+                        cancelAnimationFrame(gameInterval);
+                        gameInterval = null;
+                    }
+
+                    if (tabId !== 'home') {
+                        stopPreventionMessages();
+                    }
+                    
+                    // Call the function for the selected tab
+                    if (tabs[tabId]) {
+                        tabs[tabId]();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
